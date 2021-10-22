@@ -1,0 +1,8 @@
+(library
+  (name pocaml))
+
+(ocamllex
+  (modules lexer))
+
+(ocamlyacc
+  (modules parser))
