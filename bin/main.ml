@@ -4,7 +4,7 @@ open Pocaml.Ast
 
 let _ =
   let rec printAstTree = function
-      Lit(x)            -> string_of_int x
+      LitInt(x)            -> string_of_int x
     | Conditional(e1, e2, e3) -> "( if " ^ (printAstTree e1) ^ " then " ^ (printAstTree e2) ^ " else " ^ (printAstTree e3) ^ " )"
     (* print_string "( if ";
        printAstTree e1;
@@ -18,10 +18,10 @@ let _ =
       let astTreeE2 = printAstTree e2 in
       let opStr =
         (match op with
-           Add -> "+"
-         | Sub -> "-"
-         | Mul -> "*"
-         | Div -> "/"
+           PlusOp -> "+"
+         | MinusOp -> "-"
+         | TimesOp -> "*"
+         | DivideOp -> "/"
          | _ -> ""
         ) in
       ("(" ^ astTreeE1 ^ opStr ^ astTreeE2 ^ ")")
