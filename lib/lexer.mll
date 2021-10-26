@@ -28,6 +28,14 @@ rule token = parse
 | "if" { IF }
 | "then" { THEN }
 | "else" { ELSE }
+| "let" { LET }
+| "in"  { IN }
+| "function" { FUNC }
+| "match" { MATCH }
+| "with"  { WITH }
+| "->"    { ARROW }
+| ":"     { COLON }
+| "="     { EQ }
 | ['0'-'9']+ as lit { LITERAL(int_of_string lit) }
 | ['a'-'z']+ as var { VARIABLE(var) }
 | eof { EOF }
