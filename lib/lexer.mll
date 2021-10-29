@@ -25,6 +25,11 @@ rule token = parse
 | '-' { MINUS }
 | '*' { TIMES }
 | '/' { DIVIDE }
+| "not" { NOT }
+| ";"  { SEMI }
+| "list" { LIST }
+| "["    { LEFT_BRAC }
+| "]"    { RIGHT_BRAC }
 | "if" { IF }
 | "then" { THEN }
 | "else" { ELSE }
