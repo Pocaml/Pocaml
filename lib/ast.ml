@@ -46,7 +46,7 @@ and expr =
 and param =
   | Param of var_id
   | ParamAnn of var_id * typ
-and literal =
+and literal = 
   | LitInt of int
   | LitString of string
   | LitChar of char
@@ -57,6 +57,9 @@ and pat =
   | PatId of var_id
   | PatLit of literal
   | PatCons of var_id * var_id
+
+type list_literal = 
+  | ListConstruct of expr * list_literal
 
 let extract_program = function
   | Program defs -> defs

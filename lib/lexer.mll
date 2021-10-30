@@ -10,13 +10,15 @@
 
 let blanks = [' ' '\t' '\r' '\n']+
 let digit = ['0'-'9']
+let bool_literal = ('True' | 'False')
 let uppercase = ['A'-'Z']
 let lowercase = ['a'-'z']
 let letter = (uppercase | lowercase)
-let capitalized_ident = uppercase (letter | digit | '_' | '\'')*
-let lowercase_ident = (lowercase | '_') (letter | digit | '_' | '\'')*
+let string_literal = (letter | digit | '_' | '\'')
+let capitalized_ident = uppercase string_literal*
+let lowercase_ident = (lowercase | '_') string_literal*
 let integer_literal = ['-']? digit (digit | '_')*
-let regular_char = [^ '\'' '\\']
+let regular_char = [^ '\'' '\\'] 
 
 rule token = parse
   blanks { token lexbuf }
@@ -30,19 +32,34 @@ rule token = parse
 | "list" { LIST }
 | "["    { LEFT_BRAC }
 | "]"    { RIGHT_BRAC }
+| "("    { LEFT_PAREN }
+| ")"    { RIGHT_PAREN }
 | "if" { IF }
 | "then" { THEN }
 | "else" { ELSE }
 | "let" { LET }
 | "in"  { IN }
 | "function" { FUNC }
+| "rec"   { REC }
 | "match" { MATCH }
 | "with"  { WITH }
+| "|"     { PIPE }
 | "->"    { ARROW }
 | ":"     { COLON }
+| "::"    { CONS }
 | "="     { EQ }
-| ['0'-'9']+ as lit { LITERAL(int_of_string lit) }
-| ['a'-'z']+ as var { VARIABLE(var) }
+| "<"     { LT }
+| "<="    { LE }
+| ">"     { GT }
+| ">="    { GE }
+| "&&"    { AND }
+| "||"    { OR }
+| integer_literal+ as lit { LITINT(int_of_string lit) }
+| string_literal+ as lit  { LITSTRING(lit) }
+| bool_literal as lit     { LITBOOL(lit) }
+| letter+ as lit          { LITCHAR(lit) }
+| lowercase+ as var { VARIABLE(var) }
+
 | eof { EOF }
 
 and comment level = parse

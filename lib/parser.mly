@@ -10,18 +10,17 @@
 %token NOT                                                   
 %token PLUS MINUS TIMES DIVIDE LT LE GT GE EQ NE OR AND CONS 
 %token IF THEN ELSE                                          
-%token LET REC IN                                               
-%token FUN                                                   
+%token LET IN                                               
+%token FUN REC                                                
 %token MATCH WITH PIPE                                      
 %token ARROW
 %token LEFT_PAREN RIGHT_PAREN
 %token COLON                                                
 
 %nonassoc LET IN FUN MATCH WITH PIPE ARROW
-%left SEMI
+%right SEMI
 %nonassoc IF THEN ELSE
-%left OR
-%left AND
+%right OR AND
 %left LT LE GT GE EQ NE
 %right CONS
 %left PLUS MINUS
@@ -45,12 +44,16 @@ definition:
 
 param:
 | LEFT_PAREN VARIABLE COLON type RIGHT_PAREN { ParamAnn($2, $4) }
-| VARIABLE param {}
-| VARIABLE {}
+| VARIABLE param { }
+| VARIABLE       { }
 
 type:
 | VARIABLE LIST { TApp(TCon("list"), TVar($1)) }
-| VARIABLE        {    }
+| VARIABLE      { }
+
+list_literal:
+| expr SEMI list_literal { ListConstruct($1, $3) }
+|                        { [] }
 
 expr:
   expr PLUS   expr { Binop($1, PlusOp, $3) }
@@ -59,8 +62,9 @@ expr:
 | expr DIVIDE expr { Binop($1, DivideOp, $3) }
 | IF expr THEN expr ELSE expr { Conditional($2, $4, $6) }
 | LET var EQ expr IN expr { Letin($2, $4, $6) }
-| LEFT_BRAC expr RIGHT_BRAC { $1 }
+| LEFT_BRAC list_literal RIGHT_BRAC { $1 }
 | LITINT          { LitInt($1) }
+| LITBOOL         { LitBool($1) }
 | VARIABLE        { Var($1) }
 
 
