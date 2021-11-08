@@ -4,14 +4,22 @@
 (alias
   (name default)
   (deps
-    (alias ocamllex)
-    (alias ocamlyacc)))
+    (alias lexer)
+    (alias parser)))
 
-(ocamllex
-  (modules lexer))
+(rule
+ (alias lexer)
+ (deps lexer.mll)
+ (target lexer.ml)
+ (action (chdir %{workspace_root}
+          (run %{bin:ocamllex} -q -o %{target} %{deps}))))
 
-(ocamlyacc
-  (modules parser))
+(rule
+ (alias parser)
+ (deps parser.mly)
+ (targets parser.ml parser.mli)
+ (action (chdir %{workspace_root}
+          (run %{bin:ocamlyacc} %{deps}))))
 
 (rule
   (alias yacc_log)
