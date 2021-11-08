@@ -27,20 +27,23 @@
 %left TIMES DIVIDE
 %nonassoc NOT
 
-%start expr
-%type <Ast.expr> expr
+%start program
+%type <Ast.program> program
 
 %%
 
 program:
-| definition program { Program ($1 :: extract_program $2) }
-| definition { Program [$1] }
+  defs EOF { Program ($1) }
 
-definition:
-| LET VARIABLE param COLON type EQ expr { DefFn($2, $3, $5, $7) }
-| LET VARIABLE param EQ expr { DefFn($2, $3, TNone, $5)}
-| LET REC VARIABLE param COLON type EQ expr { DefFnRec($3, $4, $6, $8) }
-| LET REC VARIABLE param EQ expr { DefFnRec($3, $4, TNone, $6)}
+defs:
+  /* nothing */ { [] }
+  | def defs { $1 :: $2 }
+
+def:
+| LET VARIABLE param COLON type EQ expr { Def($2, $3, $5, $7) }
+| LET VARIABLE param EQ expr { Def($2, $3, TNone, $5)}
+| LET REC VARIABLE param COLON type EQ expr { DefRecFn($3, $4, $6, $8) }
+| LET REC VARIABLE param EQ expr { DefRecFn($3, $4, TNone, $6)}
 
 param:
 | LEFT_PAREN VARIABLE COLON type RIGHT_PAREN { ParamAnn($2, $4) }
@@ -56,7 +59,7 @@ list_literal:
 |                        { [] }
 
 expr:
-  expr PLUS   expr { Binop($1, PlusOp, $3) }
+|  expr PLUS   expr { Binop($1, PlusOp, $3) }
 | expr MINUS  expr { Binop($1, MinusOp, $3) }
 | expr TIMES  expr { Binop($1, TimesOp, $3) }
 | expr DIVIDE expr { Binop($1, DivideOp, $3) }

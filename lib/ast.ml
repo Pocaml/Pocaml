@@ -31,8 +31,8 @@ type typ =
 
 type program = Program of definition list
 and definition =
-  | DefFn of var_id * param list * typ * expr
-  | DefFnRec of var_id * param list * typ * expr
+  | Def of var_id * param list * typ * expr
+  | DefRecFn of var_id * param list * typ * expr
 and expr =
   | Lit of literal
   | Var of var_id
