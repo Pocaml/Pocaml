@@ -10,7 +10,6 @@
 
 let blanks = [' ' '\t' '\r' '\n']+
 let digit = ['0'-'9']
-let bool_literal = ('True' | 'False')
 let uppercase = ['A'-'Z']
 let lowercase = ['a'-'z']
 let letter = (uppercase | lowercase)
@@ -39,7 +38,7 @@ rule token = parse
 | "else" { ELSE }
 | "let" { LET }
 | "in"  { IN }
-| "function" { FUNC }
+| "function" { FUN }
 | "rec"   { REC }
 | "match" { MATCH }
 | "with"  { WITH }
@@ -54,12 +53,12 @@ rule token = parse
 | ">="    { GE }
 | "&&"    { AND }
 | "||"    { OR }
+| "True"  { LITBOOL(true)  }
+| "False" { LITBOOL(false) }
 | integer_literal+ as lit { LITINT(int_of_string lit) }
 | string_literal+ as lit  { LITSTRING(lit) }
-| bool_literal as lit     { LITBOOL(lit) }
-| letter+ as lit          { LITCHAR(lit) }
+| '\''(letter as lit)'\'' { LITCHAR(lit) }  (* excape sequence not supported *)
 | lowercase+ as var { VARIABLE(var) }
-
 | eof { EOF }
 
 and comment level = parse

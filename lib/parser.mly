@@ -62,7 +62,7 @@ expr:
 | expr DIVIDE expr { Binop($1, DivideOp, $3) }
 | IF expr THEN expr ELSE expr { Conditional($2, $4, $6) }
 | LET var EQ expr IN expr { Letin($2, $4, $6) }
-| LEFT_BRAC list_literal RIGHT_BRAC { $1 }
+| LEFT_BRAC list_literal RIGHT_BRAC { $2 }
 | LITINT          { LitInt($1) }
 | LITBOOL         { LitBool($1) }
 | VARIABLE        { Var($1) }
