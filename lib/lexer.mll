@@ -18,6 +18,7 @@ let capitalized_ident = uppercase string_literal*
 let lowercase_ident = (lowercase | '_') string_literal*
 let integer_literal = ['-']? digit (digit | '_')*
 let regular_char = [^ '\'' '\\'] 
+let variable_id = lowercase (lowercase | uppercase)*
 
 rule token = parse
   blanks { token lexbuf }
@@ -56,9 +57,9 @@ rule token = parse
 | "True"  { LITBOOL(true)  }
 | "False" { LITBOOL(false) }
 | integer_literal+ as lit { LITINT(int_of_string lit) }
-| string_literal+ as lit  { LITSTRING(lit) }
+| '"' string_literal+ '"' as lit  { LITSTRING(lit) }
 | '\''(letter as lit)'\'' { LITCHAR(lit) }  (* excape sequence not supported *)
-| lowercase+ as var { VARIABLE(var) }
+| variable_id as var { VARIABLE(var) }
 | eof { EOF }
 
 and comment level = parse
