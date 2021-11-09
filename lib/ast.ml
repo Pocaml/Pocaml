@@ -58,8 +58,10 @@ and pat =
   | PatLit of literal
   | PatCons of var_id * var_id
 
+(* List Cons
 type list_literal = 
-  | ListConstruct of expr * list_literal
+  | ListCons of expr * list_literal
+*)
 
 let extract_program = function
   | Program defs -> defs
