@@ -44,7 +44,6 @@ and expr =
   | Apply of expr * expr
   | Match of expr * (pat * expr) list
 and param =
-  | Param of var_id
   | ParamAnn of var_id * typ
 and literal = 
   | LitInt of int
