@@ -36,19 +36,25 @@ program:
   defs EOF { Program ($1) }
 
 defs:
-  /* nothing */ { [] }
-  | def defs { $1 :: $2 }
+    /* nothing */    { [] }
+  | def defs         { $1 :: $2 }
 
 def:
-    LET VARIABLE param COLON typ EQ expr { Def($2, $3, $5, $7) }
-  | LET VARIABLE param EQ expr { Def($2, $3, TNone, $5)}
-  | LET REC VARIABLE param COLON typ EQ expr { DefRecFn($3, $4, $6, $8) }
-  | LET REC VARIABLE param EQ expr { DefRecFn($3, $4, TNone, $6)}
+    LET LEFT_PAREN VARIABLE COLON typ RIGHT_PAREN EQ expr    { Def($3, [], $5, $8) }
+  | LET VARIABLE params_opt COLON typ EQ expr                { Def($2, $3, $5, $7) }
+  | LET VARIABLE params_opt EQ expr                          { Def($2, $3, TNone, $5) }
+  | LET REC VARIABLE params_opt COLON typ EQ expr            { DefRecFn($3, $4, $6, $8) }
+  | LET REC VARIABLE params_opt EQ expr                      { DefRecFn($3, $4, TNone, $6)}
 
-param:
-    LEFT_PAREN VARIABLE COLON typ RIGHT_PAREN { [ParamAnn($2, $4)] }
-  | VARIABLE       { [ParamAnn($1, TNone)] }
-  | VARIABLE param { ParamAnn($1, TNone) :: $2 }
+params_opt:
+    /* no param */  { [] }
+  | params          { $1 }
+
+params:
+    LEFT_PAREN VARIABLE COLON typ RIGHT_PAREN           { [ ParamAnn($2, $4) ] }
+  | LEFT_PAREN VARIABLE COLON typ RIGHT_PAREN params    { ParamAnn($2, $4) :: $6 }
+  | VARIABLE                                            { [ ParamAnn($1, TNone) ] }
+  | VARIABLE params                                     { ParamAnn($1, TNone) :: $2 }
 
 typ:
     VARIABLE LIST { TApp(TCon("list"), TVar($1)) }
