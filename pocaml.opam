@@ -1,0 +1,32 @@
+opam-version: "2.0"
+name: "pocaml"
+version: "0.1"
+synopsis: "Compiler for a language like OCaml"
+description: """
+Semester compiler project for W4115 Programing Languages and Translators offered
+at Columbia University in the fall of 2021.
+"""
+maintainer: [
+  "Leo Qiao, flq2101@columbia.edu"
+  "Peter Choi, jc4883@columbia.edu"
+  "Yiming Fang, yf2484@columbia.edu"
+  "Yunlan Li, yl4387@columbia.edu"
+]
+authors: [
+  "Leo Qiao, flq2101@columbia.edu"
+  "Peter Choi, jc4883@columbia.edu"
+  "Yiming Fang, yf2484@columbia.edu"
+  "Yunlan Li, yl4387@columbia.edu"
+]
+license: "MIT"
+homepage: "https://github.com/Pocaml/Pocaml"
+dev-repo: "git+https://github.com/Pocaml/Pocaml"
+bug-reports: "https://github.com/Pocaml/Pocaml/issues"
+depends: [
+  "ocaml"
+  "dune"
+  "ppx_expect"
+]
+build: [
+  ["dune" "build" "-p" name "-j" jobs]
+]
