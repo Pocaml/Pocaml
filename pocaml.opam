@@ -26,6 +26,7 @@ depends: [
   "ocaml"
   "dune"
   "ppx_expect"
+  "llvm"
 ]
 build: [
   ["dune" "build" "-p" name "-j" jobs]

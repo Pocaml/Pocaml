@@ -1,5 +1,6 @@
 (library
-  (name pocaml))
+  (name pocaml)
+  (libraries llvm))
   
 
 (alias
