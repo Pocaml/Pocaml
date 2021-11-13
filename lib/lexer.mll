@@ -14,6 +14,7 @@ let uppercase = ['A'-'Z']
 let lowercase = ['a'-'z']
 let letter = (uppercase | lowercase)
 let string_literal = (letter | digit | '_' | '\'')
+(* TODO: fix var_id regex: support 'a *)
 let capitalized_ident = uppercase string_literal*
 let lowercase_ident = (lowercase | '_') string_literal*
 let integer_literal = ['-']? digit (digit | '_')*
