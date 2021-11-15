@@ -60,7 +60,7 @@ rule token = parse
 | integer_literal+ as lit { LITINT(int_of_string lit) }
 | '"' string_literal+ '"' as lit  { LITSTRING(lit) }
 | '\''(letter as lit)'\'' { LITCHAR(lit) }  (* excape sequence not supported *)
-| variable_id as var { VARIABLE(var) }
+| lowercase_ident as var { VARIABLE(var) }
 | eof { EOF }
 
 and comment level = parse
