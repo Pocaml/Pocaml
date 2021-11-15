@@ -3,7 +3,7 @@
 *)
 
 module L = Llvm
-open Ir
+open Ast
 
 module StringMap = Map.Make(String)
 exception CodegenError of string
