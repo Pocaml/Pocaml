@@ -1,20 +1,10 @@
-type unary_op =
-  | Not
-
-type binary_op =
-  | PlusOp | MinusOp | TimesOp | DivideOp
-  | LtOp | LeOp | GtOp | GeOp
-  | EqOp | NeOp
-  | OrOp | AndOp
-  | ConsOp
-  | SeqOp
-
 (* type variable name *)
 type tvar_id = string
 
 (* variable name *)
 type var_id = string
 
+(* variable name or underscore *)
 type binder = string option
 
 (* type annotation *)
@@ -28,12 +18,11 @@ type typ =
   | TArrow of typ * typ
   | TNone
 
-type program = Program of (var_id * expr) list
+type program = Program of definition list
+and definition = Def of binder * expr
 and expr =
   | Lit of typ * literal
   | Var of typ * var_id
-  | UnaryOp of typ * unary_op * expr
-  | BinaryOp of typ * expr * binary_op * expr
   | Letin of typ * binder * expr * expr
   | Lambda of typ * binder * expr
   | Apply of typ * expr * expr
@@ -47,3 +36,11 @@ and pat =
   | PatDefault of binder
   | PatLit of literal
   | PatCons of pat * pat
+
+let typ_of_expr = function
+| Lit (typ, _) -> typ
+| Var (typ, _) -> typ
+| Letin (typ, _, _, _) -> typ
+| Lambda (typ, _, _) -> typ
+| Apply (typ, _, _) -> typ
+| Match (typ, _, _) -> typ

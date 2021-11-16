@@ -7,18 +7,18 @@ let error s = raise (LowerAstError s)
 let not_implemented = error "Not implemented"
 
 (* A.program -> I.program *)
-let lowerProgram = function 
-  (Program defs) -> I.Program (List.map lowerDef defs)
+let rec lower_program = function 
+  (A.Program defs) -> I.Program (List.map lower_def defs)
 
 (* A.definition -> (I.binder * I.Expr)*)
-let lowerDef = function
-  (Def (avar, aparams, atyp, abody)) -> (some avar, lowerLambda aparams atyp abody))
-| (DefRecFn (avar, aparams, atyp, abody)) -> (some avar, lowerLambda aparams atyp abody))
+and lower_def = function
+  (A.Def (avar, aparams, atyp, abody)) -> I.Def (Some avar, lower_lambda aparams atyp abody)
+| (A.DefRecFn (avar, aparams, atyp, abody)) -> I.Def (Some avar, lower_lambda aparams atyp abody)
 
-let lowerExpr = not_implemented
+and lower_expr = not_implemented
 
-let lowerPat = not_implemented
+and lower_pat = not_implemented
 
-let lowerLambda = not_implemented
+and lower_lambda = not_implemented
 
-let lowerLit = not_implemented
+and lower_lit = not_implemented
