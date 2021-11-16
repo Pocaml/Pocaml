@@ -1,6 +1,6 @@
 (* 
   function monomorphize: df_program -> m_program optional
 *)
-open Ast
+open Ir
 
 let monomorphize (p: program) = p

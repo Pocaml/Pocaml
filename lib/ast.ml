@@ -53,7 +53,6 @@ and literal =
   | LitList of expr list
   | LitBool of bool
 and pat =
-  | PatWildcard (* this needs to be dealt with, because underscore is a VARIABLE *)
   | PatId of var_id
   | PatLit of literal
   | PatCons of pat * pat
