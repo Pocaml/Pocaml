@@ -35,7 +35,7 @@ and literal =
 and pat =
   | PatDefault of binder
   | PatLit of literal
-  | PatCons of pat * pat
+  | PatCons of binder * binder
 
 let typ_of_expr = function
 | Lit (typ, _) -> typ
