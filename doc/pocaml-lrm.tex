@@ -1,0 +1,216 @@
+\def\NT#1{\textnormal{\textit{#1}}}
+\def\T#1{\textnormal{\textit{#1}}}
+
+\documentclass[journal]{IEEEtran}
+
+% *** CITATION PACKAGES ***
+\usepackage[style=ieee]{biblatex} 
+\bibliography{example_bib.bib} 
+
+% *** MATH PACKAGES ***
+\usepackage{amsmath}
+
+% *** PDF, URL AND HYPERLINK PACKAGES ***
+\usepackage{url}
+% correct bad hyphenation here
+\hyphenation{op-tical net-works semi-conduc-tor}
+\usepackage{graphicx}  %needed to include png, eps figures
+\usepackage{float}  % used to fix location of images i.e.\begin{figure}[H]
+
+
+\begin{document}
+
+% paper title
+\title{Pocaml Language Reference Manual}
+
+% author names 
+\author{Feitong Qiao, Yiming Fang,
+        Yunlan Li, Peter Choi
+        }
+        
+% make the title area
+\maketitle
+
+\begin{abstract}
+This document describes the Pocaml language's syntax.
+The Pocaml language is a functional language that implements the core subset of the OCaml language, with type inference and many features from OCaml's standard library.
+\end{abstract}
+
+\section{Lexical Aspects}
+\subsection{Blanks} 
+Characters including space, tab, carriage return (\textbackslash r), line feed (\textbackslash n), and form feed are considered blanks in Pocaml. They serve to separate the program into tokens.
+
+\subsection{Comments} 
+Comments begin with the 2-character sequence (* and end with the 2-character sequence *). Comments do not occur within a string or character literals. In nested comments, all opening (* should be closed with a corresponding *).
+\begin{verbatim}
+(* this is a comment *)
+(* this is a
+multi-line
+comment *)
+(* this is a (* nested *) comment *)
+(* this is not (* a valid comment *)
+\end{verbatim}
+
+\subsection{Identifier}
+Identifiers are sequences of letters, digits, $\_$ (the underscore character), and ' (the single quote), starting with a letter or an underscore. Letters contain the lowercase and uppercase alphabets from ASCII. In many places, Pocaml distinguishes between capitalized and non-capitalized identifiers. Underscore is considered a lowercase letter for this purpose.
+\begin{align*}
+\NT{ident}
+& ::= (\NT{letter} | \T{\_}) \{ \NT{letter} | \T{0}...\T{9} | \T{\_} | \T{'} \} \\
+\textit{uppercase-ident}
+& ::= (\T{A}...\T{Z}) \{ \NT{letter} | \T{0}...\T{9} | \T{\_} | \T{'}\} \\
+\textit{lowercase-ident}
+& ::= (\T{a}...\T{z} | \T{\_}) \{ \NT{letter} | \T{0}...\T{9} | \T{\_} | \T{'}\} \\
+\NT{letter}
+& ::= \T{A}...\T{Z} | \T{a}...\T{z}
+\end{align*}
+
+\subsection{Integer literals}
+An integer literal is a sequence of one or more digits, optionally preceded by a minus sign. Integer literals are in decimal.
+$$\texttt{\NT{integer-literal} ::= [\T{-}](\T{ 0...9 })\{\T{ 0...9 }\}}$$
+
+\subsection{Boolean literals}
+A boolean literal is either $true$ or $false$. They have the type $Bool$.
+\begin{flalign*}
+    bool: & \\
+    & true & \\
+    & false &
+\end{flalign*}
+
+\subsection{Character literals}
+Characters include the regular set of characters and the escape sequence, which serve to delimit characters.
+\begin{align*}
+\texttt{\NT{char-literal}} ::=& \ \texttt{\NT{regular-char}} \mid \texttt{\NT{escape-sequence}} \\
+\texttt{\NT{escape-sequence}} ::=& \ \backslash (" \mid ' \mid n \mid t\mid b\mid r\mid space)
+\end{align*}
+
+\section{Expressions}
+\subsection{Lvalues}
+An \textit{lvalue} represents a storage location that can be assigned a value: variables and parameters.  
+\begin{flalign*}
+    lvalues: & \\
+    & id &
+\end{flalign*}
+
+
+\subsection{Return values}
+The return value of a \texttt{let-in} expression is the value after the in. \texttt{if-then-else} and other functions, including operators, have the return value equal to the result of the corresponding computation.
+
+
+\subsection{List Literals}
+Array expressions can be defined as \texttt{[e1; e2;...;en]} and must be explicitly typed. For example, one may say 
+\texttt{let lst: int list = [1;2;3]}.
+Pocaml supports the efficient appending of the head element \texttt{e1} to the tail list \texttt{[e2; ...; en]}, using the operator $::$, as well as the less efficient concatenation between two lists using the operator $@$.\\
+Furthermore, pattern matching is possible with lists as follows
+
+\subsection{Lambda Functions}
+The lambda functions are used in Pocaml using the keyword \texttt{fun} by specifying the operations on the function input.  They can be used as expressions and passed as argument into other functions.
+
+\subsection{Function Calls}
+A function application is a prefix expression \texttt{id arg1 arg2 ...}
+with zero or more blank-separated expression parameters. Functions applications are curried. The values of the parameters are strictly evaluated from left to right and bound to the function's formal parameters using conventional static scoping rules.
+
+Partial function applications are supported and a function that takes in the remaining arguments is returned.
+
+\subsection{Operators}
+The binary operators are $+, -, *, /, =, <>, <, >, <=, >=, \&\&, ||$.
+
+A leading minus sign negates an integer expression.
+
+Parentheses group expressions in the usual way.
+
+The binary operators $+, -, *, /$ require integer operands and return an integer result.
+
+The binary operators $=, <>, >, <, >=, <=$ compare the operands, which may be either both integer or both string and produce $true$ if the comparison holds and $false$ otherwise. String comparison is done using normal ASCII lexicographic order.
+
+The binary operators $\&\&, ||$ do the usual logical AND and OR on two boolean values.
+
+Unary minus has the highest precedence followed by $*, /$, then $+, -$, then $=, <>, >, <, >=, <=$, then $\&\&$, then $||$. 
+
+
+\subsection{Flow Control}
+The brancing expression \textbf{if} $\textit{expr}_1$ \textbf{then} $\textit{expr}_2$ \textbf{else} $\textit{expr}_3$ evaluates to $\textit{expr}_2$ if $\textit{expr}_1$ evaluates to \textbf{true}. Otherwise, it evaluates to $\textit{expr}_3$. $\textit{expr}_i$ is an $\textit{expr}$ and is used here simply for ease of referring to different expressions that appear in the brancing expression.
+
+
+\subsection{Let}
+The expression \textbf{let} \textit{declaration} \textbf{in} \textit{expr} produces a set of name to value bindings that are accessible within \textit{expr-list}. The let expression evaluates to the value of the last expression in \textit{expr-list}.
+
+\subsection{Pattern Matching}
+A pattern matching expression is in the form of \textit{match expr1 with pattern-matching}, where \textit{pattern-matching} is a sequence of clauses in the form of $pattern \xrightarrow[]{} exprValue$, separated by pipes $|$. The value of the entire pattern matching expression is the $exprValue$ of the first $pattern$ that $expr1$ matches.
+
+\section{Declarations}
+A Pocaml program is a sequence of declarations.
+\begin{flalign*}
+    declaration:& \\
+    & lvalue = expr & \\
+    & \textit{function-declaration} & \\
+    & \textit{type-declaration} &
+\end{flalign*}
+
+\subsection{Let declaration}
+The declaration \textbf{let} \textit{declaration} is used only at the top level. It produces a name to value binding that can be accessed globally within the same file.
+
+\subsection{Types}
+Pocaml has predefined types including \texttt{int, bool, char} New types can be defined using the following context free grammar rules.
+\begin{flalign*}
+\textit{type-declaration}:& \\
+& \texttt{type} \ \textit{type-id} = \textit{type} & \\
+\textit{type}:& \\
+& \textit{type-id}& \\
+& \texttt{array} \ of \  \textit{type-id} & \\
+\end{flalign*}
+
+\subsection{Functions}
+\begin{flalign*}
+    \textit{function-declaration}: &\\
+    & \textbf{let } \textnormal{ id } \textit{args}_{opt} = \textit{expr} & \\
+    & \textbf{let rec} \textnormal{ id } \textit{args}_{opt} = \textit{expr} & \\
+    & \textbf{let } \textnormal{ id } \textit{args}_{opt} : \textit{ type} = \textit{expr}& \\
+    & \textbf{let rec} \textnormal{ id } \textit{args}_{opt} : \textit{ type} = \textit{expr}& \\
+    args: & \\
+    & id & \\
+    & (id : \textit{type}) & \\
+    & param \quad param & \\
+\end{flalign*}
+% pass by value or reference?
+The last two forms is a function declaration of the first two with return type annotation. The first two form declares a function named id that takes in zero or more parameters defined by param; \textit{expr} is the body of the function. The scope of the function arguments is \textit{expr}. The \textbf{rec} keyword defines a recursive function whose id is available in the scope of \textit{expr}.
+
+The following function declarations are equivalent and both functions have type $int \rightarrow int \rightarrow int$.
+\begin{flushleft}
+let fun1 (a: int) (b: int) = a + b \\
+let fun2 (a: int) = fun (b:int) $\rightarrow$ a + b
+\end{flushleft}
+
+\section{Standard Library}
+$print(s : string)\\$
+Print the string to the standard output.\\
+
+$map : (\lq a \xrightarrow[]{} \lq b) \xrightarrow[]{} \lq a \textit{ list} \xrightarrow[]{} \lq b\textit{ list}\\$
+Apply a function to each element of a list to return a new list with the original type.\\
+
+$iter : (\lq a \xrightarrow[]{} unit) \xrightarrow[]{} \lq a \textit{ list} \xrightarrow[]{} unit\\$
+Call a function with each element of a list.\\
+
+$append : \lq a \textit{ list} \xrightarrow[]{} \lq a \textit{ list} \xrightarrow[]{} \lq a \textit{ list}\\$
+Return a new array containing the concatenation of two arrays\\
+
+$fold\_left : (\lq a \xrightarrow[]{} \lq b \xrightarrow[]{} \lq a) \xrightarrow[]{} \lq a \xrightarrow[]{} \lq b \textit{ list} \xrightarrow[]{} \lq a\\$
+$\textit{fold\_left f lst init}$ applies function $f$ on the current accumulator (initially $init$) and each element in $lst$, going from left to right. It returns the current accumulator after going through the whole list.\\
+
+$fold\_right : (\lq a \xrightarrow[]{} \lq b \xrightarrow[]{} \lq a) \xrightarrow[]{} \lq a \xrightarrow[]{} \lq b \textit{ list} \xrightarrow[]{} \lq a\\$
+$\textit{fold\_right f lst init}$ applies function $f$ on the current accumulator (initially $init$) and each element in $lst$, going from right to left. It returns the current accumulator after going through the whole list.
+
+
+
+\section{Example}
+This example demonstrates how to implement Euclid's algorithm for finding the Greatest Common Denominator (GCD), printing the result after finding the answer.  This code snippet showcases many features of our ls, such as \texttt{let-in} declaration, recursive function call, type specification, and control flow statements.
+\begin{verbatim}
+let rec gcd (a : int) (b : int) : int =
+    if b = 0 then a 
+    else gcd b (a mod b)
+let print_gcd (a : int) (b : int) : () =
+    print_endline (string_of_int (gcd a b)) 
+\end{verbatim}
+
+\end{document}
+
+

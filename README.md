@@ -1,6 +1,11 @@
 # Pocaml Programming Language
 
-To run the main driver program, use the following command:
+To output AST, run:
 ```
-dune exec bin/main.exe
+dune exec -- bin/main.exe -a
+```
+
+To output LLVM, run:
+```
+dune exec -- bin/main.exe -l
 ```

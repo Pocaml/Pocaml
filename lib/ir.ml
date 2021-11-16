@@ -1,67 +1,46 @@
-type unary_op =
-  | Not
-
-type binary_op =
-  | PlusOp | MinusOp | TimesOp | DivideOp
-  | LtOp | LeOp | GtOp | GeOp
-  | EqOp | NeOp
-  | OrOp | AndOp
-  | ConsOp
-  | SeqOp
-
 (* type variable name *)
 type tvar_id = string
-
-(* type constructor name *)
-type tcon_id = string
-
-(* data constructor name *)
-type dcon_id = string
 
 (* variable name *)
 type var_id = string
 
+(* variable name or underscore *)
+type binder = string option
+
 (* type annotation *)
 type typ =
+  | TUnit
+  | TInt
+  | TBool
+  | TChar
+  | TList of typ
   | TVar of tvar_id
-  | TCon of tcon_id
-  | TApp of typ * typ
   | TArrow of typ * typ
   | TNone
 
 type program = Program of definition list
-and definition =
-  | Def of var_id * param list * typ * expr
-  | DefRecFn of var_id * param list * typ * expr
+and definition = Def of binder * expr
 and expr =
-  | Lit of literal
-  | Var of var_id
-  | UnaryOp of unary_op * expr
-  | BinaryOp of expr * binary_op * expr
-  | Conditional of expr * expr * expr
-  | Letin of var_id * expr * expr
-  | Lambda of param list * expr
-  | Apply of expr * expr
-  | Match of expr * (pat * expr) list
-and param =
-  | Param of var_id
-  | ParamAnn of var_id * typ
+  | Lit of typ * literal
+  | Var of typ * var_id
+  | Letin of typ * binder * expr * expr
+  | Lambda of typ * binder * expr
+  | Apply of typ * expr * expr
+  | Match of typ * expr * (pat * expr) list
 and literal = 
   | LitInt of int
-  | LitString of string
   | LitChar of char
   | LitList of expr list
   | LitBool of bool
 and pat =
-  | PatWildcard
-  | PatId of var_id
+  | PatDefault of binder
   | PatLit of literal
-  | PatCons of var_id * var_id
+  | PatCons of pat * pat
 
-(* List Cons
-type list_literal = 
-  | ListCons of expr * list_literal
-*)
-
-let extract_program = function
-  | Program defs -> defs
+let typ_of_expr = function
+| Lit (typ, _) -> typ
+| Var (typ, _) -> typ
+| Letin (typ, _, _, _) -> typ
+| Lambda (typ, _, _) -> typ
+| Apply (typ, _, _) -> typ
+| Match (typ, _, _) -> typ

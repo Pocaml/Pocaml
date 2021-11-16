@@ -27,7 +27,7 @@
  (alias yacc_log)
  (deps parser.mly)
  (targets parser_debug.output)
- (action (run ocamlyacc -bparser_debug -v %{deps})))
+ (action (run %{bin:ocamlyacc} -bparser_debug -v %{deps})))
 
 (rule
  (alias pprint)

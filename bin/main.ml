@@ -1,5 +1,4 @@
 open Pocaml
-open Pocaml.Ast
 
 (* 
   Parse to ast
@@ -31,10 +30,11 @@ let () =
   let lexbuf = Lexing.from_channel !channel in
   let program = Parser.program (Lexer.token) lexbuf in
   match !action with
-    Ast -> print_string (Ast.string_of_program program)
-  | _ -> match !action with
-      Ast     -> ()
-    | LLVM_IR -> print_string (Llvm.string_of_llmodule (Codegen.translate program))
-    | Compile -> let m = Codegen.translate program in
-	Llvm_analysis.assert_valid_module m;
-	print_string (Llvm.string_of_llmodule m)
+    Ast -> print_string (Print.string_of_program program)
+  | _ -> let m = program |> Lower_ast.lower_program |> Type_infer.type_infer |> Lambda_lift.lambda_lift |> Defunctionalize.defunctionalize |> Monomorphize.monomorphize |> Codegen.codegen in
+    match !action with
+        Ast     -> ()
+      | LLVM_IR -> print_string (Llvm.string_of_llmodule m)
+      (* | Compile -> Llvm_analysis.assert_valid_module m;
+                   print_string (Llvm.string_of_llmodule m) *)
+      | Compile -> print_string (Llvm.string_of_llmodule m)

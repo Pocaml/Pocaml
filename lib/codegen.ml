@@ -7,27 +7,34 @@ open Ir
 
 module StringMap = Map.Make(String)
 exception CodegenError of string
+let error s = raise (CodegenError s)
+let not_implemented = error "Not implemented"
 
-(* translate : Sast.program -> Llvm.module *)
+
+(* translate : I.program -> Llvm.module *)
 let codegen = function Program (definitions) -> 
   let context    = L.global_context () in
-  let the_module = L.create_module context "Pocaml" in
+  let the_module = L.create_module context "pocaml" in
 
   (* Get types from the context *)
   let i32_t      = L.i32_type    context
+  and i8_t = L.i8_type context
+  and i1_t = L.i1_type context
   (*and void_t     = L.void_type   context*) 
   in
   (* let get_typ = function A.LitInt   -> i32_t in *)
   let ltype_of_typ = function
   | TVar (_) -> raise (CodegenError "Cannot have type variables.")
-  | TCon ("int") -> i32_t
-  | TCon ("()") -> i32_t
-  | TApp (_, _) -> raise (CodegenError "TApp type is not supported.")
+  | TInt -> i32_t
+  | TChar -> i8_t
+  | TBool -> i1_t
+  | TUnit -> i8_t
+  | TList _ -> raise (CodegenError "TApp type is not supported.")
   | TArrow (_, _) -> raise (CodegenError "TArrow type is not supported.")
   | TNone -> raise (CodegenError "Cannot have unknown types.")
-  | _ -> raise (CodegenError "Type is not supported.")
+  (* | _ -> raise (CodegenError "Type is not supported.") *)
   in
-  (* temporary *)
+  let ltype_of_expr e = ltype_of_typ (typ_of_expr e) in
 
   (*
   let fresh_var =
@@ -36,41 +43,41 @@ let codegen = function Program (definitions) ->
       string_of_int _fresh_var
   in
   *)
+  let fresh_var () =
+    let _v = ref 0
+    in _v := !_v + 1; string_of_int !_v
+  in
 
   let printf_t : L.lltype = 
-    L.var_arg_function_type i32_t [| L.pointer_type i32_t |] in
+    L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
   let printf_func : L.llvalue = 
     L.declare_function "printf" printf_t the_module in
 
   let function_decls : (L.llvalue * definition) StringMap.t =
     let function_decl m def = match def with 
-      | Def (name, _, def_typ, _) -> 
-        (*let ftype = L.function_type (ltype_of_typ def_typ) formal_types in*)
-        StringMap.add name (L.define_function name (ltype_of_typ def_typ) the_module, def) m 
-      | _ -> raise (CodegenError "Unexpected case")
+      Def (dbinder, dexpr) -> match dbinder with
+        | Some dname -> StringMap.add dname (L.define_function dname (ltype_of_expr dexpr) the_module, def) m
+        | None -> not_implemented
     in List.fold_left function_decl StringMap.empty definitions 
   in
   
   (* Fill in the body of the given function *)
   let build_function_body = function 
-    Def (name, _, _, body) -> 
-      let (the_function, _) = StringMap.find name function_decls in
-      let builder = L.builder_at_end context (L.entry_block the_function) in
-      let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder in
+    | Def (dbinder, dexpr) -> match dbinder with
+      | Some dname ->
+        let (the_function, _) = StringMap.find dname function_decls in
+        let builder = L.builder_at_end context (L.entry_block the_function) in
+        let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder in
 
-      let rec llexpr builder (e : expr) = match e with
-        | Lit (LitInt i) -> L.const_int i32_t i
-        | Apply (Var "print_int", Lit (LitInt _)) ->
-              L.build_call printf_func [| int_format_str ; (llexpr builder e) |] "fresh_var" builder
-        | _ -> raise (CodegenError "Unexpected case")
-      in
-      llexpr builder body
-    | _ -> raise (CodegenError "Unexpected case")
-    in
-
-  let rec iter defs = match defs with 
-  | def :: tail -> ignore (build_function_body def); iter tail
-  | [] as x -> ignore (x)
+        let rec llexpr builder (e : expr) = match e with
+          | Lit (_, LitInt i) -> L.const_int i32_t i
+          | Apply (_, Var (_, "print_int"), Lit (_, LitInt _)) ->
+                L.build_call printf_func [| int_format_str ; (llexpr builder e) |] (fresh_var ()) builder
+          | _ -> raise (CodegenError "Unexpected case")
+        in
+        ignore (L.build_ret (llexpr builder dexpr) builder)
+      | None -> not_implemented
   in
-  iter definitions;
+
+  List.iter build_function_body definitions;
   the_module

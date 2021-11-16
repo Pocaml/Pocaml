@@ -43,6 +43,7 @@ and expr =
   | Lambda of param list * expr
   | Apply of expr * expr
   | Match of expr * (pat * expr) list
+  | Annotation of expr * typ
 and param =
   | ParamAnn of var_id * typ
 and literal = 
@@ -52,10 +53,9 @@ and literal =
   | LitList of expr list
   | LitBool of bool
 and pat =
-  | PatWildcard
   | PatId of var_id
   | PatLit of literal
-  | PatCons of var_id * var_id
+  | PatCons of pat * pat
 
 (* List Cons
 type list_literal = 
