@@ -29,6 +29,7 @@ and lower_expr annotation =
 and lower_pat = not_implemented
 
 (* Note: the typ here is wrong *)
+(* need to work on setting the type right *)
 and lower_lambda aparams atyp abody = match aparams with
     [] -> (match atyp with
           A.TNone -> lower_expr None abody
