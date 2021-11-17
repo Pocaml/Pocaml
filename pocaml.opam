@@ -24,6 +24,9 @@ dev-repo: "git+https://github.com/Pocaml/Pocaml"
 bug-reports: "https://github.com/Pocaml/Pocaml/issues"
 depends: [
   "ocaml"
+  "ocamlformat"
+  "ocaml-lsp-server"
+  "merlin"
   "dune"
   "ppx_expect"
   "llvm" { ="11.0.0" }
