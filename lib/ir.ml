@@ -29,6 +29,7 @@ and expr =
   | Lambda of typ * binder * expr
   | Apply of typ * expr * expr
   | Match of typ * expr * (pat * expr) list
+  | Unit of typ
 
 and literal =
   | LitInt of int
@@ -48,3 +49,4 @@ let typ_of_expr = function
   | Lambda (typ, _, _) -> typ
   | Apply (typ, _, _) -> typ
   | Match (typ, _, _) -> typ
+  | Unit (typ) -> typ

@@ -73,6 +73,7 @@ and expr =
   | Apply of expr * expr
   | Match of expr * (pat * expr) list
   | Annotation of expr * typ
+  | Unit of typ
 
 and param = ParamAnn of var_id * typ
 

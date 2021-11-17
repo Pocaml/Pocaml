@@ -67,7 +67,6 @@ literal:
   | LITINT          { LitInt($1) }
   | LITBOOL         { LitBool($1) }
 
-
 list_literal:
     /* empty list */        { [] } 
   | expr SEMI list_literal  { $1 :: $3 }
@@ -91,8 +90,7 @@ atom:
   | var { $1 }
   | LEFT_PAREN expr COLON typ RIGHT_PAREN { Annotation($2, $4) }
   | LEFT_PAREN expr RIGHT_PAREN { $2 }
-  // need to think about unit type
-  // | LEFT_PAREN RIGHT_PAREN { () } 
+  | LEFT_PAREN RIGHT_PAREN { Unit(TCon("()")) } 
 
 var:
   VARIABLE         { Var($1) }
