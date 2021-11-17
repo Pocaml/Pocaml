@@ -1,42 +1,55 @@
 (library
-  (name pocaml)
-  (libraries llvm))
-  
+ (name pocaml)
+ (libraries llvm))
 
 (alias
-  (name default)
-  (deps
-    (alias lexer)
-    (alias parser)))
+ (name default)
+ (deps
+  (alias lexer)
+  (alias parser)))
 
 (rule
  (alias lexer)
  (deps lexer.mll)
  (target lexer.ml)
- (action (chdir %{workspace_root}
-          (run %{bin:ocamllex} -q -o %{target} %{deps}))))
+ (action
+  (chdir
+   %{workspace_root}
+   (run %{bin:ocamllex} -q -o %{target} %{deps}))))
 
 (rule
  (alias parser)
  (deps parser.mly)
  (targets parser.ml parser.mli)
- (action (chdir %{workspace_root}
-          (run %{bin:ocamlyacc} %{deps}))))
+ (action
+  (chdir
+   %{workspace_root}
+   (run %{bin:ocamlyacc} %{deps}))))
 
 (rule
  (alias yacc_log)
  (deps parser.mly)
  (targets parser_debug.output)
- (action (run %{bin:ocamlyacc} -bparser_debug -v %{deps})))
+ (action
+  (run %{bin:ocamlyacc} -bparser_debug -v %{deps})))
 
 (rule
  (alias pprint)
  (target pprint)
  (deps
-   print.ml
-   ast.ml
-   (alias lexer)
-   (alias parser))
+  print.ml
+  ast.ml
+  (alias lexer)
+  (alias parser))
  (action
-  (chdir %{workspace_root}/lib
-  (run %{bin:ocamlopt} -o pprint ast.ml parser.mli parser.ml lexer.ml print.ml))))
+  (chdir
+   %{workspace_root}/lib
+   (run
+    %{bin:ocamlopt}
+    -o
+    pprint
+    ast.ml
+    parser.mli
+    parser.ml
+    lexer.ml
+    print.ml))))

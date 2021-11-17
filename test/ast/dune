@@ -1,9 +1,6 @@
 (library
  (name ast_test)
  (inline_tests)
- (preprocess (pps ppx_expect))
- (libraries
-  pocaml)
-)
-
-
+ (preprocess
+  (pps ppx_expect))
+ (libraries pocaml))

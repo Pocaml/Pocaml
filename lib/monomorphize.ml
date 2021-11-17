@@ -1,6 +1,6 @@
-(* 
-  function monomorphize: df_program -> m_program optional
+(*
+   function monomorphize: df_program -> m_program optional
 *)
 open Ir
 
-let monomorphize (p: program) = p
+let monomorphize (p : program) = p

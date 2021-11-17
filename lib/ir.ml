@@ -19,7 +19,9 @@ type typ =
   | TNone
 
 type program = Program of definition list
+
 and definition = Def of binder * expr
+
 and expr =
   | Lit of typ * literal
   | Var of typ * var_id
@@ -27,20 +29,22 @@ and expr =
   | Lambda of typ * binder * expr
   | Apply of typ * expr * expr
   | Match of typ * expr * (pat * expr) list
-and literal = 
+
+and literal =
   | LitInt of int
   | LitChar of char
   | LitList of expr list
   | LitBool of bool
+
 and pat =
   | PatDefault of binder
   | PatLit of literal
   | PatCons of binder * binder
 
 let typ_of_expr = function
-| Lit (typ, _) -> typ
-| Var (typ, _) -> typ
-| Letin (typ, _, _, _) -> typ
-| Lambda (typ, _, _) -> typ
-| Apply (typ, _, _) -> typ
-| Match (typ, _, _) -> typ
+  | Lit (typ, _) -> typ
+  | Var (typ, _) -> typ
+  | Letin (typ, _, _, _) -> typ
+  | Lambda (typ, _, _) -> typ
+  | Apply (typ, _, _) -> typ
+  | Match (typ, _, _) -> typ
