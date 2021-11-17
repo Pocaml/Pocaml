@@ -15,18 +15,6 @@ let string_of_param = function
 
 let string_of_params = function
   | params -> String.concat " " (List.map string_of_param params)
-
-let string_of_lit = function
-  | LitInt int -> string_of_int int
-  | _ -> "some other lit"
-(* | LitString of string
-   | LitChar of char
-   | LitList of expr list
-   | LitBool of bool *)
-
-let string_of_expr = function
-  | Lit literal -> string_of_lit literal
-  | _ -> "some other expr"
 (* | Var of var_id
    | UnaryOp of unary_op * expr
    | BinaryOp of expr * binary_op * expr
@@ -35,6 +23,19 @@ let string_of_expr = function
    | Lambda of param list * expr
    | Apply of expr * expr
    | Match of expr * (pat * expr) list *)
+
+
+
+let rec string_of_expr = function
+  | Lit literal -> string_of_lit literal
+  | _ -> "some other expr"
+and string_of_lit = function
+  | LitInt int -> string_of_int int
+  | LitString string -> string
+  | LitBool bool -> string_of_bool bool
+  | LitChar char -> "\'" ^ String.make 1 char ^ "\'"
+  | LitList list -> "[" ^ (String.concat ";" (List.map string_of_expr list)) ^ "]"   
+
 
 let string_of_def = function
   | Def (var_id, params_opt, typ, expr) ->

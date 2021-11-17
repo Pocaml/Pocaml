@@ -22,3 +22,20 @@ let%expect_test _ =
 let%expect_test _ =
   print_prog "let a: int = 3";
   [%expect {| let a : int = 3 |}]
+
+let%expect_test _ =
+  print_prog "let a = \"some string\"";
+  [%expect {| let a = "some string" |}]
+
+let%expect_test _ =
+  print_prog "let a = false";
+  [%expect {| let a = false |}]
+
+
+let%expect_test _ =
+  print_prog "let a = 'c'";
+  [%expect {| let a = 'c' |}]
+
+let%expect_test _ =
+  print_prog "let a = [1;2;3;]";
+  [%expect {| let a = [1;2;3] |}]
