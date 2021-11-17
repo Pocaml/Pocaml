@@ -39,17 +39,31 @@ and lower_def = function
 and lower_expr ann = function
   | A.Lit lit -> I.Lit (ann I.TNone, lower_lit lit)
   | A.Var var_id -> I.Var (ann I.TNone, var_id)
-  (* | A.UnaryOp (aop, e) -> I.Apply (I.Var ) *)
+  | A.UnaryOp (aop, e) -> lower_unary_op ann aop e
+  | A.BinaryOp (e1, aop, e2) -> lower_binary_op ann aop e1 e2
   | A.Annotation (e, t) -> lower_expr (annotate (ann (lower_typ t))) e
-  | A.Apply (e1, e2) ->
-      I.Apply
-        (ann I.TNone, lower_expr no_annotation e1, lower_expr no_annotation e2)
+  | A.Apply (e1, e2) -> lower_apply ann e1 e2
   | _ -> not_implemented ()
 
 (* and lower_pat ()= not_implemented *)
 
-(* and lower_unary_op ann aop e = match aop with *)
-(*   | A.Not -> I.Apply(I.Var not_op_str) *)
+and lower_unary_op ann aop e =
+  I.Apply
+    ( ann I.TNone,
+      I.Var (I.TNone, A.string_of_unary_op aop),
+      lower_expr no_annotation e )
+
+and lower_binary_op ann aop e1 e2 =
+  I.Apply
+    ( ann I.TNone,
+      I.Apply
+        ( I.TNone,
+          I.Var (I.TNone, A.string_of_binary_op aop),
+          lower_expr no_annotation e1 ),
+      lower_expr no_annotation e2 )
+
+and lower_apply ann e1 e2 =
+  I.Apply (ann I.TNone, lower_expr no_annotation e1, lower_expr no_annotation e2)
 
 (* Note: the typ here is wrong *)
 and lower_lambda aparams atyp abody =
