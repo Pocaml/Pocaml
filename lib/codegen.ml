@@ -10,7 +10,7 @@ exception CodegenError of string
 
 let error s = raise (CodegenError s)
 
-let not_implemented = error "Not implemented"
+let not_implemented () = error "Not implemented"
 
 (* translate : I.program -> Llvm.module *)
 let codegen = function
@@ -66,7 +66,7 @@ let codegen = function
                     ( L.define_function dname (ltype_of_expr dexpr) the_module,
                       def )
                     m
-              | None -> not_implemented)
+              | None -> not_implemented ())
         in
         List.fold_left function_decl StringMap.empty definitions
       in
@@ -94,7 +94,7 @@ let codegen = function
                   | _ -> raise (CodegenError "Unexpected case")
                 in
                 ignore (L.build_ret (llexpr builder dexpr) builder)
-            | None -> not_implemented)
+            | None -> not_implemented ())
       in
 
       List.iter build_function_body definitions;

@@ -1,11 +1,29 @@
 module A = Ast
 module I = Ir
+(* open Op *)
 
 exception LowerAstError of string
 
 let error s = raise (LowerAstError s)
 
-let not_implemented = error "Not implemented"
+let not_implemented () = error "Not implemented"
+
+let rec annotate t1 t2 =
+  match (t1, t2) with
+  | t1, I.TNone -> t1
+  | I.TNone, t2 -> t2
+  | t1, I.TVar _ -> t1
+  | I.TVar _, t2 -> t2
+  | I.TBool, I.TBool -> I.TBool
+  | I.TChar, I.TChar -> I.TChar
+  | I.TInt, I.TInt -> I.TInt
+  | I.TUnit, I.TUnit -> I.TUnit
+  | I.TArrow (t11, t12), I.TArrow (t21, t22) ->
+      I.TArrow (annotate t11 t21, annotate t12 t22)
+  | I.TList t1', I.TList t2' -> I.TList (annotate t1' t2')
+  | _ -> error "Can't collapse type annotation"
+
+let no_annotation = annotate I.TNone
 
 (* A.program -> I.program *)
 let rec lower_program = function
@@ -18,32 +36,33 @@ and lower_def = function
   | A.DefRecFn (avar, aparams, atyp, abody) ->
       I.Def (Some avar, lower_lambda aparams atyp abody)
 
-and lower_expr annotation =
-  let default_typ = match annotation with Some typ -> typ | None -> I.TNone in
-  function
-  | A.Lit lit -> lower_lit lit
-  | A.Var "print_int" -> I.Var (I.TArrow (I.TInt, I.TUnit), "print_int")
-  | A.Annotation (e, t) -> lower_expr (Some (lower_typ t)) e
+and lower_expr ann = function
+  | A.Lit lit -> I.Lit (ann I.TNone, lower_lit lit)
+  | A.Var var_id -> I.Var (ann I.TNone, var_id)
+  (* | A.UnaryOp (aop, e) -> I.Apply (I.Var ) *)
+  | A.Annotation (e, t) -> lower_expr (annotate (ann (lower_typ t))) e
   | A.Apply (e1, e2) ->
-      I.Apply (default_typ, lower_expr None e1, lower_expr None e2)
-  | _ -> not_implemented
+      I.Apply
+        (ann I.TNone, lower_expr no_annotation e1, lower_expr no_annotation e2)
+  | _ -> not_implemented ()
 
-and lower_pat = not_implemented
+(* and lower_pat ()= not_implemented *)
+
+(* and lower_unary_op ann aop e = match aop with *)
+(*   | A.Not -> I.Apply(I.Var not_op_str) *)
 
 (* Note: the typ here is wrong *)
 and lower_lambda aparams atyp abody =
   match aparams with
   | [] -> (
       match atyp with
-      | A.TNone -> lower_expr None abody
-      | _ -> lower_expr (Some (lower_typ atyp)) abody)
+      | A.TNone -> lower_expr no_annotation abody
+      | _ -> lower_expr (annotate (lower_typ atyp)) abody)
   | ParamAnn (avar_id, atyp) :: ps ->
       I.Lambda
         (lower_typ atyp, binder_of_var_id avar_id, lower_lambda ps atyp abody)
 
-and lower_lit = function
-  | A.LitInt i -> I.Lit (I.TInt, I.LitInt i)
-  | _ -> not_implemented
+and lower_lit = function A.LitInt i -> I.LitInt i | _ -> not_implemented ()
 
 and lower_typ = function
   | A.TVar tvar_id -> I.TVar tvar_id
