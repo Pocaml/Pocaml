@@ -59,7 +59,7 @@ let rec string_of_expr = function
       let expr_string = string_of_expr expr in
       let typ_string = string_of_typ typ in
       "( " ^ expr_string ^ " : " ^ typ_string ^ " )"
-  | Unit _ -> "Not Implemented"
+  | _ -> "Not Implemented"
 
 and string_of_lit = function
   | LitInt int -> string_of_int int

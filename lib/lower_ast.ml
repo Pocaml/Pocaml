@@ -1,5 +1,6 @@
 module A = Ast
 module I = Ir
+module P = Print
 
 exception LowerAstError of string
 
@@ -58,7 +59,7 @@ and lower_expr ann = function
 and lower_unary_op ann aop e =
   I.Apply
     ( ann I.TNone,
-      I.Var (I.TNone, A.string_of_unary_op aop),
+      I.Var (I.TNone, P.string_of_unop aop),
       lower_expr no_annotation e )
 
 and lower_binary_op ann aop e1 e2 =
@@ -66,7 +67,7 @@ and lower_binary_op ann aop e1 e2 =
     ( ann I.TNone,
       I.Apply
         ( I.TNone,
-          I.Var (I.TNone, A.string_of_binary_op aop),
+          I.Var (I.TNone, P.string_of_binop aop),
           lower_expr no_annotation e1 ),
       lower_expr no_annotation e2 )
 
