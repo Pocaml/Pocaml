@@ -75,8 +75,8 @@ and lower_conditional ann cond e1 e2 =
     ( ann I.TNone,
       lower_expr no_annotation cond,
       [
-        (I.PatLit (I.LitBool true), lower_expr no_annotation e1);
-        (I.PatLit (I.LitBool false), lower_expr no_annotation e2);
+        (I.PatLit (I.TNone, I.LitBool true), lower_expr no_annotation e1);
+        (I.PatLit (I.TNone, I.LitBool false), lower_expr no_annotation e2);
       ] )
 
 and lower_letin ann var_id e1 e2 =
@@ -122,16 +122,19 @@ and lower_pat =
     | A.LitInt i -> I.LitInt i
     | A.LitChar c -> I.LitChar c
     | A.LitBool b -> I.LitBool b
-    | A.LitList _ -> error "Can't lower pattern matching on list"
+    | A.LitList [] -> I.LitList []
+    | A.LitList _ -> error "Can't lower pattern matching on non-emtpy list"
     | A.LitString _ -> error "Can't lower pattern matching on string"
   in
   function
-  | A.PatId avar_id -> I.PatDefault (binder_of_avar_id avar_id)
-  | A.PatLit lit -> I.PatLit (lower_literal lit)
+  | A.PatId avar_id -> I.PatDefault (I.TNone, binder_of_avar_id avar_id)
+  | A.PatLit lit -> I.PatLit (I.TNone, lower_literal lit)
   | A.PatCons (pat1, pat2) -> (
       match (pat1, pat2) with
       | A.PatId avar_id1, A.PatId avar_id2 ->
-          I.PatCons (binder_of_avar_id avar_id1, binder_of_avar_id avar_id2)
+          I.PatCons (I.TNone, binder_of_avar_id avar_id1, binder_of_avar_id avar_id2)
+      | A.PatId avar_id1, A.PatLit (A.LitList []) ->
+          I.PatConsEnd (I.TNone, binder_of_avar_id avar_id1)
       | _ -> error "Can't lower recursive patterns yet")
 
 and lower_lit ann alit =

@@ -38,9 +38,10 @@ and literal =
   | LitBool of bool
 
 and pat =
-  | PatDefault of binder
-  | PatLit of literal
-  | PatCons of binder * binder
+  | PatDefault of typ * binder
+  | PatLit of typ * literal
+  | PatCons of typ * binder * binder
+  | PatConsEnd of typ * binder
 
 let typ_of_expr = function
   | Lit (typ, _) -> typ
@@ -49,4 +50,4 @@ let typ_of_expr = function
   | Lambda (typ, _, _) -> typ
   | Apply (typ, _, _) -> typ
   | Match (typ, _, _) -> typ
-  | Unit (typ) -> typ
+  | Unit typ -> typ
