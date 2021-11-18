@@ -59,7 +59,6 @@ let rec string_of_expr = function
       let expr_string = string_of_expr expr in
       let typ_string = string_of_typ typ in
       "( " ^ expr_string ^ " : " ^ typ_string ^ " )"
-  | _ -> "Not Implemented"
 
 and string_of_lit = function
   | LitInt int -> string_of_int int
@@ -67,6 +66,7 @@ and string_of_lit = function
   | LitBool bool -> string_of_bool bool
   | LitChar char -> "\'" ^ String.make 1 char ^ "\'"
   | LitList list -> "[" ^ String.concat ";" (List.map string_of_expr list) ^ "]"
+  | LitUnit -> "()"
 
 and string_of_pattern = function
   | PatId id -> id

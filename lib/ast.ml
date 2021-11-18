@@ -53,7 +53,6 @@ and expr =
   | Apply of expr * expr
   | Match of expr * (pat * expr) list
   | Annotation of expr * typ
-  | Unit
 
 and param = ParamAnn of var_id * typ
 
@@ -63,6 +62,7 @@ and literal =
   | LitChar of char
   | LitList of expr list
   | LitBool of bool
+  | LitUnit
 
 and pat = PatId of var_id | PatLit of literal | PatCons of pat * pat
 

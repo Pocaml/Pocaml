@@ -54,7 +54,6 @@ and lower_expr ann = function
   | A.Apply (e1, e2) -> lower_apply ann e1 e2
   | A.Match (e, arms) -> lower_match ann e arms
   | A.Annotation (e, t) -> lower_expr (annotate (ann (lower_typ t))) e
-  | A.Unit -> I.Unit I.TNone
 
 and lower_unary_op ann aop e =
   I.Apply
@@ -114,7 +113,9 @@ and lower_lambda ann aparams aoutput_typ abody =
 and lower_match ann e arms =
   let typ' = ann I.TNone in
   let e' = lower_expr no_annotation e in
-  let lower_arm = function (arm_pat, arm_e) -> (lower_pat arm_pat, lower_expr no_annotation arm_e) in
+  let lower_arm = function
+    | arm_pat, arm_e -> (lower_pat arm_pat, lower_expr no_annotation arm_e)
+  in
   let arms' = List.map lower_arm arms in
   I.Match (typ', e', arms')
 
@@ -126,6 +127,7 @@ and lower_pat =
     | A.LitList [] -> I.LitList []
     | A.LitList _ -> error "Can't lower pattern matching on non-emtpy list"
     | A.LitString _ -> error "Can't lower pattern matching on string"
+    | A.LitUnit -> error "Can't lower pattern matching on unit"
   in
   function
   | A.PatId avar_id -> I.PatDefault (I.TNone, binder_of_avar_id avar_id)
@@ -133,7 +135,8 @@ and lower_pat =
   | A.PatCons (pat1, pat2) -> (
       match (pat1, pat2) with
       | A.PatId avar_id1, A.PatId avar_id2 ->
-          I.PatCons (I.TNone, binder_of_avar_id avar_id1, binder_of_avar_id avar_id2)
+          I.PatCons
+            (I.TNone, binder_of_avar_id avar_id1, binder_of_avar_id avar_id2)
       | A.PatId avar_id1, A.PatLit (A.LitList []) ->
           I.PatConsEnd (I.TNone, binder_of_avar_id avar_id1)
       | _ -> error "Can't lower recursive patterns yet")
@@ -147,7 +150,8 @@ and lower_lit ann alit =
     | A.LitBool b -> I.LitBool b
     | A.LitList es -> I.LitList (List.map (lower_expr no_annotation) es)
     | A.LitString s ->
-        I.LitList (List.map i_expr_of_char (char_list_of_string s))
+      I.LitList (List.map i_expr_of_char (char_list_of_string s))
+    | A.LitUnit -> I.LitUnit
   in
   I.Lit (ann I.TNone, ilit)
 
