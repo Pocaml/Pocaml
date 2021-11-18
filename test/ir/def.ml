@@ -5,4 +5,4 @@ open Pocaml.Print
 
 let%expect_test _ =
   print_prog "let a: () = ()";
-  [%expect {| let a : () = some other expr |}]  
+  [%expect {| let a : () = Not Implemented |}]

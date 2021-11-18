@@ -41,7 +41,7 @@ rule token = parse
 | "else" { ELSE }
 | "let" { LET }
 | "in"  { IN }
-| "function" { FUN }
+| "fun" { FUN }
 | "rec"   { REC }
 | "match" { MATCH }
 | "with"  { WITH }
@@ -59,7 +59,7 @@ rule token = parse
 | "true"  { LITBOOL(true)  }
 | "false" { LITBOOL(false) }
 | integer_literal+ as lit { LITINT(int_of_string lit) }
-| '"' string_literal+ '"' as lit  { LITSTRING(lit) }
+| '"' (string_literal+ as lit) '"'  { LITSTRING(lit) }
 | '\''(letter as lit)'\'' { LITCHAR(lit) }  (* excape sequence not supported *)
 | lowercase_ident as var { VARIABLE(var) }
 | eof { EOF }

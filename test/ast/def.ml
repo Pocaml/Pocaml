@@ -31,7 +31,6 @@ let%expect_test _ =
   print_prog "let a = false";
   [%expect {| let a = false |}]
 
-
 let%expect_test _ =
   print_prog "let a = 'c'";
   [%expect {| let a = 'c' |}]

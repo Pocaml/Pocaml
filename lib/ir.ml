@@ -49,4 +49,4 @@ let typ_of_expr = function
   | Lambda (typ, _, _) -> typ
   | Apply (typ, _, _) -> typ
   | Match (typ, _, _) -> typ
-  | Unit (typ) -> typ
+  | Unit typ -> typ

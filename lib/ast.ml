@@ -1,8 +1,4 @@
-open Op
-
 type unary_op = Not
-
-let string_of_unary_op = function Not -> not_op_str
 
 type binary_op =
   | PlusOp
@@ -19,22 +15,6 @@ type binary_op =
   | AndOp
   | ConsOp
   | SeqOp
-
-let string_of_binary_op = function
-  | PlusOp -> and_op_str
-  | MinusOp -> minus_op_str
-  | TimesOp -> times_op_str
-  | DivideOp -> divide_op_str
-  | LtOp -> lt_op_str
-  | LeOp -> le_op_str
-  | GtOp -> gt_op_str
-  | GeOp -> ge_op_str
-  | EqOp -> eq_op_str
-  | NeOp -> ne_op_str
-  | OrOp -> or_op_str
-  | AndOp -> and_op_str
-  | ConsOp -> cons_op_str
-  | SeqOp -> seq_op_str
 
 (* type variable name *)
 type tvar_id = string
