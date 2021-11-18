@@ -43,10 +43,11 @@ let codegen = function
       string_of_int _fresh_var
   in
   *)
-      let fresh_var () =
-        let _v = ref 0 in
-        _v := !_v + 1;
-        string_of_int !_v
+      let fresh_var =
+        let n = ref 0 in
+        fun () ->
+          n := !n + 1;
+          string_of_int !n
       in
 
       let printf_t : L.lltype =
