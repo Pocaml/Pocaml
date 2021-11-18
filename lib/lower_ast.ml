@@ -51,9 +51,9 @@ and lower_expr ann = function
   | A.Letin (avar_id, e1, e2) -> lower_letin ann avar_id e1 e2
   | A.Lambda (ps, e) -> lower_lambda ann ps A.TNone e
   | A.Apply (e1, e2) -> lower_apply ann e1 e2
-  (* | A.Match (e, pats) -> lower_match ann e pats *)
-  | A.Match (_, _) -> error "Lowering pattern-match is not implemented"
+  | A.Match (e, arms) -> lower_match ann e arms
   | A.Annotation (e, t) -> lower_expr (annotate (ann (lower_typ t))) e
+  | A.Unit -> I.Unit I.TNone
 
 and lower_unary_op ann aop e =
   I.Apply
@@ -110,16 +110,29 @@ and lower_lambda ann aparams aoutput_typ abody =
           binder_of_avar_id avar_id,
           lower_lambda no_annotation aps aoutput_typ abody )
 
-(* and lower_match ann e pats = *)
-(*   let typ' = ann I.TNone in *)
-(*   let e' = lower_expr e in *)
-(*   let pats' = map (lower_pat no_annotation) pats in *)
-(*   I.Match (typ', e', pats') *)
+and lower_match ann e arms =
+  let typ' = ann I.TNone in
+  let e' = lower_expr no_annotation e in
+  let lower_arm = function (arm_pat, arm_e) -> (lower_pat arm_pat, lower_expr no_annotation arm_e) in
+  let arms' = List.map lower_arm arms in
+  I.Match (typ', e', arms')
 
-(* and lower_pat ann = function *)
-(*   | A.PatId avar_id -> I.PatDefault (binder_of_avar_id avar_id) *)
-(*   | A.PatLit lit -> I.PatLit lit *)
-(*   | A.PatCons *)
+and lower_pat =
+  let lower_literal = function
+    | A.LitInt i -> I.LitInt i
+    | A.LitChar c -> I.LitChar c
+    | A.LitBool b -> I.LitBool b
+    | A.LitList _ -> error "Can't lower pattern matching on list"
+    | A.LitString _ -> error "Can't lower pattern matching on string"
+  in
+  function
+  | A.PatId avar_id -> I.PatDefault (binder_of_avar_id avar_id)
+  | A.PatLit lit -> I.PatLit (lower_literal lit)
+  | A.PatCons (pat1, pat2) -> (
+      match (pat1, pat2) with
+      | A.PatId avar_id1, A.PatId avar_id2 ->
+          I.PatCons (binder_of_avar_id avar_id1, binder_of_avar_id avar_id2)
+      | _ -> error "Can't lower recursive patterns yet")
 
 and lower_lit ann alit =
   let i_expr_of_char c = I.Lit (I.TNone, I.LitChar c) in
