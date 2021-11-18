@@ -17,7 +17,7 @@
 %token LEFT_PAREN RIGHT_PAREN
 %token COLON                                                
 
-%nonassoc LET IN FUN MATCH WITH PIPE ARROW
+%right LET IN FUN MATCH WITH PIPE ARROW
 %right SEMI
 %nonassoc IF THEN ELSE
 %right OR AND
