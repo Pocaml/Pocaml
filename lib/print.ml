@@ -1,10 +1,10 @@
 open Ast
 
-let string_of_typ = function
+let rec string_of_typ = function
   | TVar tvar_id -> tvar_id
   | TCon tcon_id -> tcon_id
   | TApp (_, _) -> "TApp"
-  | TArrow (_, _) -> "TArrow"
+  | TArrow (t1, t2) -> string_of_typ t1 ^ " -> " ^ string_of_typ t2
   | TNone -> ""
 
 let string_of_param = function
@@ -18,15 +18,70 @@ let string_of_params = function
 
 let string_of_lit = function
   | LitInt int -> string_of_int int
+  | LitBool bool -> if bool then "True" else "False"
+  | LitString str -> "\"" ^ str ^ "\""
   | _ -> "some other lit"
 (* | LitString of string
    | LitChar of char
    | LitList of expr list
    | LitBool of bool *)
 
-let string_of_expr = function
+let string_of_binop = function
+  | PlusOp -> "+"
+  | MinusOp -> "-"
+  | TimesOp -> "*"
+  | DivideOp -> "/"
+  | LtOp -> "<"
+  | LeOp -> "<="
+  | GtOp -> ">"
+  | GeOp -> ">="
+  | EqOp -> "="
+  | NeOp -> "!="
+  | OrOp -> "||"
+  | AndOp -> "&&"
+  | ConsOp -> "::"
+  | SeqOp -> ";"
+
+let string_of_unop = function Not -> "not"
+
+let rec string_of_pattern = function
+  | PatId id -> id
+  | PatLit lit -> string_of_lit lit
+  | PatCons (p1, p2) ->
+      "( " ^ string_of_pattern p1 ^ " :: " ^ string_of_pattern p2 ^ " )"
+
+let rec string_of_expr = function
   | Lit literal -> string_of_lit literal
-  | _ -> "some other expr"
+  | Var id -> id
+  | UnaryOp (op, e) -> string_of_unop op ^ " " ^ string_of_expr e
+  | BinaryOp (e1, binop, e2) ->
+      "( " ^ string_of_expr e1 ^ " " ^ string_of_binop binop ^ " "
+      ^ string_of_expr e2 ^ " )"
+  | Conditional (e1, e2, e3) ->
+      let pred = string_of_expr e1 in
+      let br1 = string_of_expr e2 in
+      let br2 = string_of_expr e3 in
+      "( if " ^ pred ^ " then " ^ br1 ^ " else " ^ br2 ^ " )"
+  | Letin (id, e1, e2) ->
+      "( let " ^ id ^ " = " ^ string_of_expr e1 ^ " in " ^ string_of_expr e2
+      ^ " )"
+  | Lambda (params, e) ->
+      "( fun " ^ string_of_params params ^ " = " ^ string_of_expr e ^ " )"
+  | Apply (e1, e2) -> "( " ^ string_of_expr e1 ^ " " ^ string_of_expr e2 ^ " )"
+  | Match (e, lst) ->
+      "(\n match " ^ string_of_expr e ^ " with\n" ^ string_of_match_arms lst
+      ^ "\n)"
+  | Annotation (expr, typ) ->
+      let expr_string = string_of_expr expr in
+      let typ_string = string_of_typ typ in
+      "( " ^ expr_string ^ " : " ^ typ_string ^ " )"
+
+and string_of_match_arm (pat, e) =
+  "|  " ^ string_of_pattern pat ^ " -> " ^ string_of_expr e
+
+and string_of_match_arms arms =
+  String.concat "\n" (List.map string_of_match_arm arms)
+
 (* | Var of var_id
    | UnaryOp of unary_op * expr
    | BinaryOp of expr * binary_op * expr

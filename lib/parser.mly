@@ -66,6 +66,7 @@ literal:
   | LEFT_BRAC list_literal RIGHT_BRAC { LitList($2) }
   | LITINT          { LitInt($1) }
   | LITBOOL         { LitBool($1) }
+  | LITSTRING       { LitString($1) }
 
 
 list_literal:
@@ -73,13 +74,15 @@ list_literal:
   | expr SEMI list_literal  { $1 :: $3 }
 
 expr:
-    expr PLUS   expr { BinaryOp($1, PlusOp, $3) }
+    NOT expr         { UnaryOp(Not, $2) }
+  | expr PLUS   expr { BinaryOp($1, PlusOp, $3) }
   | expr MINUS  expr { BinaryOp($1, MinusOp, $3) }
   | expr TIMES  expr { BinaryOp($1, TimesOp, $3) }
   | expr DIVIDE expr { BinaryOp($1, DivideOp, $3) }
   | IF expr THEN expr ELSE expr { Conditional($2, $4, $6) }
   | LET VARIABLE EQ expr IN expr { Letin($2, $4, $6) }
   | MATCH expr WITH match_arms { Match($2, $4) }
+  | FUN params ARROW expr { Lambda($2, $4) }
   | apply { $1 }
 
 apply:

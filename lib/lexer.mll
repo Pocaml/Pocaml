@@ -40,7 +40,7 @@ rule token = parse
 | "else" { ELSE }
 | "let" { LET }
 | "in"  { IN }
-| "function" { FUN }
+| "fun" { FUN }
 | "rec"   { REC }
 | "match" { MATCH }
 | "with"  { WITH }
