@@ -1,12 +1,19 @@
 module A = Ast
 module I = Ir
-(* open Op *)
 
 exception LowerAstError of string
 
 let error s = raise (LowerAstError s)
 
 let not_implemented () = error "Not implemented"
+
+let rec char_list_of_string = function
+  | "" -> []
+  | s ->
+      String.get s 0
+      :: char_list_of_string (String.sub s 1 (String.length s - 1))
+
+let binder_of_avar_id = function "_" -> None | s -> Some s
 
 let rec annotate t1 t2 =
   match (t1, t2) with
@@ -29,23 +36,24 @@ let no_annotation = annotate I.TNone
 let rec lower_program = function
   | A.Program defs -> I.Program (List.map lower_def defs)
 
-(* A.definition -> (I.binder * I.Expr)*)
 and lower_def = function
   | A.Def (avar, aparams, atyp, abody) ->
-      I.Def (Some avar, lower_lambda aparams atyp abody)
+      I.Def (Some avar, lower_lambda no_annotation aparams atyp abody)
   | A.DefRecFn (avar, aparams, atyp, abody) ->
-      I.Def (Some avar, lower_lambda aparams atyp abody)
+      I.Def (Some avar, lower_lambda no_annotation aparams atyp abody)
 
 and lower_expr ann = function
-  | A.Lit lit -> I.Lit (ann I.TNone, lower_lit lit)
+  | A.Lit lit -> lower_lit ann lit
   | A.Var var_id -> I.Var (ann I.TNone, var_id)
   | A.UnaryOp (aop, e) -> lower_unary_op ann aop e
   | A.BinaryOp (e1, aop, e2) -> lower_binary_op ann aop e1 e2
-  | A.Annotation (e, t) -> lower_expr (annotate (ann (lower_typ t))) e
+  | A.Conditional (cond, e1, e2) -> lower_conditional ann cond e1 e2
+  | A.Letin (avar_id, e1, e2) -> lower_letin ann avar_id e1 e2
+  | A.Lambda (ps, e) -> lower_lambda ann ps A.TNone e
   | A.Apply (e1, e2) -> lower_apply ann e1 e2
-  | _ -> not_implemented ()
-
-(* and lower_pat ()= not_implemented *)
+  (* | A.Match (e, pats) -> lower_match ann e pats *)
+  | A.Match (_, _) -> error "Lowering pattern-match is not implemented"
+  | A.Annotation (e, t) -> lower_expr (annotate (ann (lower_typ t))) e
 
 and lower_unary_op ann aop e =
   I.Apply
@@ -62,21 +70,69 @@ and lower_binary_op ann aop e1 e2 =
           lower_expr no_annotation e1 ),
       lower_expr no_annotation e2 )
 
+and lower_conditional ann cond e1 e2 =
+  I.Match
+    ( ann I.TNone,
+      lower_expr no_annotation cond,
+      [
+        (I.PatLit (I.LitBool true), lower_expr no_annotation e1);
+        (I.PatLit (I.LitBool false), lower_expr no_annotation e2);
+      ] )
+
+and lower_letin ann var_id e1 e2 =
+  if var_id = "_" then
+    I.Letin
+      ( ann I.TNone,
+        None,
+        lower_expr no_annotation e1,
+        lower_expr no_annotation e2 )
+  else
+    I.Letin
+      ( ann I.TNone,
+        Some var_id,
+        lower_expr no_annotation e1,
+        lower_expr no_annotation e2 )
+
 and lower_apply ann e1 e2 =
   I.Apply (ann I.TNone, lower_expr no_annotation e1, lower_expr no_annotation e2)
 
-(* Note: the typ here is wrong *)
-and lower_lambda aparams atyp abody =
+and lower_lambda ann aparams aoutput_typ abody =
+  let rec get_lambda_ityp = function
+    | [] -> lower_typ aoutput_typ
+    | A.ParamAnn (_, atyp) :: ps -> I.TArrow (lower_typ atyp, get_lambda_ityp ps)
+  in
+  let lambda_ityp = get_lambda_ityp aparams in
   match aparams with
-  | [] -> (
-      match atyp with
-      | A.TNone -> lower_expr no_annotation abody
-      | _ -> lower_expr (annotate (lower_typ atyp)) abody)
-  | ParamAnn (avar_id, atyp) :: ps ->
+  | [] -> lower_expr (annotate (ann lambda_ityp)) abody
+  | ParamAnn (avar_id, _) :: aps ->
       I.Lambda
-        (lower_typ atyp, binder_of_var_id avar_id, lower_lambda ps atyp abody)
+        ( lambda_ityp,
+          binder_of_avar_id avar_id,
+          lower_lambda no_annotation aps aoutput_typ abody )
 
-and lower_lit = function A.LitInt i -> I.LitInt i | _ -> not_implemented ()
+(* and lower_match ann e pats = *)
+(*   let typ' = ann I.TNone in *)
+(*   let e' = lower_expr e in *)
+(*   let pats' = map (lower_pat no_annotation) pats in *)
+(*   I.Match (typ', e', pats') *)
+
+(* and lower_pat ann = function *)
+(*   | A.PatId avar_id -> I.PatDefault (binder_of_avar_id avar_id) *)
+(*   | A.PatLit lit -> I.PatLit lit *)
+(*   | A.PatCons *)
+
+and lower_lit ann alit =
+  let i_expr_of_char c = I.Lit (I.TNone, I.LitChar c) in
+  let ilit =
+    match alit with
+    | A.LitInt i -> I.LitInt i
+    | A.LitChar c -> I.LitChar c
+    | A.LitBool b -> I.LitBool b
+    | A.LitList es -> I.LitList (List.map (lower_expr no_annotation) es)
+    | A.LitString s ->
+        I.LitList (List.map i_expr_of_char (char_list_of_string s))
+  in
+  I.Lit (ann I.TNone, ilit)
 
 and lower_typ = function
   | A.TVar tvar_id -> I.TVar tvar_id
@@ -88,7 +144,8 @@ and lower_typ = function
   | A.TApp (A.TCon "list", t) -> I.TList (lower_typ t)
   | A.TArrow (t1, t2) -> I.TArrow (lower_typ t1, lower_typ t2)
   | A.TNone -> I.TNone
-  | _ -> error "Can't lower this type."
+  | A.TCon _ -> error "Can't lower any TCon besides built-in types"
+  | A.TApp _ -> error "Can't lower any TApp besides list"
 
 and binder_of_var_id (avar_id : A.var_id) =
   match avar_id with "_" -> None | _ -> Some avar_id
