@@ -108,8 +108,3 @@ let print_prog = function
       let lexbuf = Lexing.from_string str in
       let prog = Parser.program Lexer.token lexbuf in
       print_endline (string_of_program prog)
-
-let _ =
-  let lexbuf = Lexing.from_channel stdin in
-  let prog = Parser.program Lexer.token lexbuf in
-  print_endline (string_of_program prog)
