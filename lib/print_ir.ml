@@ -11,7 +11,11 @@ let rec string_of_typ = function
   | TArrow (t1, t2) -> string_of_typ t1 ^ " -> " ^ string_of_typ t2
   | TNone -> ""
 
-let annotate _ id = id (*"(" ^ id ^ ":" ^ string_of_typ typ ^ ")"*)
+let annotate typ id = 
+  let type_str = string_of_typ typ in match type_str with
+  | "" -> id
+  | typ_str -> "( " ^ id ^ " : " ^ typ_str ^ " )"
+
 
 let rec string_of_expr = function
   | Lit (typ, literal) -> annotate typ (string_of_lit literal)
