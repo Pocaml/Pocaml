@@ -5,19 +5,19 @@ open Pocaml.Print_ir
 
 let%expect_test _ =
   print_prog "let fn (a: int) : int = 3";
-  [%expect {| let fn = ( ( fun a = ( 3 : int ) ) : int -> int ) |}]
+  [%expect {| let fn = ( ( fun a -> ( 3 : int ) ) : int -> int ) |}]
 
 let%expect_test _ =
   print_prog "let fn (a: int) = 3";
-  [%expect {| let fn = ( ( fun a = ( 3 : None ) ) : int -> None ) |}]
+  [%expect {| let fn = ( ( fun a -> ( 3 : None ) ) : int -> None ) |}]
 
 let%expect_test _ =
   print_prog "let rec fn (a: int): int = 3";
-  [%expect {| let fn = ( ( fun a = ( 3 : int ) ) : int -> int ) |}]
+  [%expect {| let fn = ( ( fun a -> ( 3 : int ) ) : int -> int ) |}]
 
 let%expect_test _ =
   print_prog "let rec fn (a: int) b (c: int): int = 3";
-  [%expect {| let fn = ( ( fun a = ( ( fun b = ( ( fun c = ( 3 : int ) ) : int -> int ) ) : None -> int -> int ) ) : int -> None -> int -> int ) |}]
+  [%expect {| let fn = ( ( fun a -> ( ( fun b -> ( ( fun c -> ( 3 : int ) ) : int -> int ) ) : None -> int -> int ) ) : int -> None -> int -> int ) |}]
 
 let%expect_test _ =
   print_prog "let a: int = 3";

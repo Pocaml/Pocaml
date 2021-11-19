@@ -32,7 +32,7 @@ let%expect_test "annotated let in expression" =
 let%expect_test "annotated lambda expression" =
   print_prog "let a = (fun (a: int) -> (a + 1 : int) : int -> int)";
   [%expect
-    {| let a = ( ( fun a = ( ( ( ( ( + : None ) ( a : None ) ) : None ) ( 1 : None ) ) : int ) ) : int -> None ) |}]
+    {| let a = ( ( fun a -> ( ( ( ( ( + : None ) ( a : None ) ) : None ) ( 1 : None ) ) : int ) ) : int -> None ) |}]
 
 let%expect_test "annotated function application" =
   print_prog "let a = (print \"hello\" : ())";
