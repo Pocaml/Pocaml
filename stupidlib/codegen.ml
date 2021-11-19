@@ -15,11 +15,14 @@ let codegen () =
   let printf_t : L.lltype =
     L.var_arg_function_type i32_t [| L.pointer_type i8_t |]
   in
-  let (_ : L.llvalue) = L.declare_function "printf" printf_t the_module in
+  let (printf_func : L.llvalue) =
+    L.declare_function "printf" printf_t the_module
+  in
 
   (* declare a null function global with same type as printf *)
-  let (_ : L.llvalue) =
-    let init = L.const_pointer_null printf_t in
+  let (printf_func2 : L.llvalue) =
+    let printf_func2_t = L.pointer_type printf_t in
+    let init = L.const_pointer_null printf_func2_t in
     L.define_global "printf_func2" init the_module
   in
 
@@ -63,8 +66,22 @@ let codegen () =
     (* change func parameter name *)
     let () = L.set_value_name "pfunc" pfunc in
     (* call the pfunc *)
-    let _ = L.build_call pfunc [| L.const_int i32_t 69 |] "pfunc_result" builder in
+    let _ =
+      L.build_call pfunc [| L.const_int i32_t 69 |] "pfunc_result" builder
+    in
     (* return a constant int *)
     L.build_ret (L.const_int i32_t 420) builder
+  in
+
+  (* define a function that updates global function var *)
+  let _ =
+    let ftype = L.function_type i32_t [| i32_t |] in
+    let func = L.define_function "func3" ftype the_module in
+    let entry_block = L.entry_block func in
+    let builder = L.builder_at_end context entry_block in
+    let _ = L.build_store printf_func printf_func2 builder in
+    (* let _ = L.build_store int_global (L.const_int i32_t 123) builder in *)
+    (* return void *)
+    L.build_ret (L.const_int i32_t 69) builder
   in
   the_module
