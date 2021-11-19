@@ -1,0 +1,3 @@
+(library
+ (name stupidlib)
+ (libraries llvm))

@@ -1,0 +1,3 @@
+(executable
+ (name stupid)
+ (libraries stupidlib llvm llvm.analysis))
