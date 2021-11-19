@@ -9,7 +9,7 @@ let rec string_of_typ = function
   | TList typ -> string_of_typ typ
   | TVar tvar_id -> tvar_id
   | TArrow (t1, t2) -> string_of_typ t1 ^ " -> " ^ string_of_typ t2
-  | TNone -> ""
+  | TNone -> "None"
 
 let annotate typ id = 
   let type_str = string_of_typ typ in match type_str with
@@ -24,7 +24,7 @@ let rec string_of_expr = function
       "( let " ^ annotate typ id ^ " = " ^ string_of_expr e1 ^ " in " ^ string_of_expr e2
       ^ " )"
   | Lambda (typ, var_id, e) ->
-      "( fun " ^ annotate typ var_id ^ " = " ^ string_of_expr e ^ " )"
+      annotate typ ("( fun " ^ var_id ^ " = " ^ string_of_expr e ^ " )")
   | Apply (typ, e1, e2) -> annotate typ ("( " ^ string_of_expr e1 ^ " " ^ string_of_expr e2 ^ " )")
   | Match (typ, e, lst) -> 
       annotate typ ("(\n match " ^ string_of_expr e ^ " with\n" ^ string_of_match_arms lst ^ "\n)")
