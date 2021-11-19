@@ -48,6 +48,7 @@ let codegen () =
     let local1 = L.build_alloca i32_t "local1" builder in
     (* store fun_param into local1 *)
     let _ = L.build_store param local1 builder in
+    (* return param *)
     L.build_ret param builder
   in
 
@@ -63,6 +64,7 @@ let codegen () =
     let () = L.set_value_name "pfunc" pfunc in
     (* call the pfunc *)
     let _ = L.build_call pfunc [| L.const_int i32_t 69 |] "pfunc_result" builder in
+    (* return a constant int *)
     L.build_ret (L.const_int i32_t 420) builder
   in
   the_module
