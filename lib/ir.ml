@@ -4,9 +4,6 @@ type tvar_id = string
 (* variable name *)
 type var_id = string
 
-(* variable name or underscore *)
-type binder = string option
-
 (* type annotation *)
 type typ =
   | TUnit
@@ -20,13 +17,13 @@ type typ =
 
 type program = Program of definition list
 
-and definition = Def of binder * expr
+and definition = Def of var_id * expr
 
 and expr =
   | Lit of typ * literal
   | Var of typ * var_id
-  | Letin of typ * binder * expr * expr
-  | Lambda of typ * binder * expr
+  | Letin of typ * var_id * expr * expr
+  | Lambda of typ * var_id * expr
   | Apply of typ * expr * expr
   | Match of typ * expr * (pat * expr) list
 
@@ -38,10 +35,10 @@ and literal =
   | LitUnit
 
 and pat =
-  | PatDefault of typ * binder
+  | PatDefault of typ * var_id
   | PatLit of typ * literal
-  | PatCons of typ * binder * binder
-  | PatConsEnd of typ * binder
+  | PatCons of typ * var_id * var_id
+  | PatConsEnd of typ * var_id
 
 let typ_of_expr = function
   | Lit (typ, _) -> typ

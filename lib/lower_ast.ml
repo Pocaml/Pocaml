@@ -1,6 +1,7 @@
 module A = Ast
 module I = Ir
 module P = Print
+open Fresh
 
 exception LowerAstError of string
 
@@ -14,7 +15,7 @@ let rec char_list_of_string = function
       String.get s 0
       :: char_list_of_string (String.sub s 1 (String.length s - 1))
 
-let binder_of_avar_id = function "_" -> None | s -> Some s
+let frseh_if_wild = function "_" -> fresh_name () | s -> s
 
 let rec annotate t1 t2 =
   match (t1, t2) with
@@ -39,9 +40,9 @@ let rec lower_program = function
 
 and lower_def = function
   | A.Def (avar, aparams, atyp, abody) ->
-      I.Def (Some avar, lower_lambda no_annotation aparams atyp abody)
+      I.Def (avar, lower_lambda no_annotation aparams atyp abody)
   | A.DefRecFn (avar, aparams, atyp, abody) ->
-      I.Def (Some avar, lower_lambda no_annotation aparams atyp abody)
+      I.Def (avar, lower_lambda no_annotation aparams atyp abody)
 
 and lower_expr ann = function
   | A.Lit lit -> lower_lit ann lit
@@ -80,16 +81,9 @@ and lower_conditional ann cond e1 e2 =
       ] )
 
 and lower_letin ann var_id e1 e2 =
-  if var_id = "_" then
     I.Letin
       ( ann I.TNone,
-        None,
-        lower_expr no_annotation e1,
-        lower_expr no_annotation e2 )
-  else
-    I.Letin
-      ( ann I.TNone,
-        Some var_id,
+        frseh_if_wild var_id,
         lower_expr no_annotation e1,
         lower_expr no_annotation e2 )
 
@@ -107,7 +101,7 @@ and lower_lambda ann aparams aoutput_typ abody =
   | ParamAnn (avar_id, _) :: aps ->
       I.Lambda
         ( lambda_ityp,
-          binder_of_avar_id avar_id,
+          frseh_if_wild avar_id,
           lower_lambda no_annotation aps aoutput_typ abody )
 
 and lower_match ann e arms =
@@ -130,15 +124,15 @@ and lower_pat =
     | A.LitUnit -> error "Can't lower pattern matching on unit"
   in
   function
-  | A.PatId avar_id -> I.PatDefault (I.TNone, binder_of_avar_id avar_id)
+  | A.PatId avar_id -> I.PatDefault (I.TNone, frseh_if_wild avar_id)
   | A.PatLit lit -> I.PatLit (I.TNone, lower_literal lit)
   | A.PatCons (pat1, pat2) -> (
       match (pat1, pat2) with
       | A.PatId avar_id1, A.PatId avar_id2 ->
           I.PatCons
-            (I.TNone, binder_of_avar_id avar_id1, binder_of_avar_id avar_id2)
+            (I.TNone, frseh_if_wild avar_id1, frseh_if_wild avar_id2)
       | A.PatId avar_id1, A.PatLit (A.LitList []) ->
-          I.PatConsEnd (I.TNone, binder_of_avar_id avar_id1)
+          I.PatConsEnd (I.TNone, frseh_if_wild avar_id1)
       | _ -> error "Can't lower recursive patterns yet")
 
 and lower_lit ann alit =
@@ -167,6 +161,3 @@ and lower_typ = function
   | A.TNone -> I.TNone
   | A.TCon _ -> error "Can't lower any TCon besides built-in types"
   | A.TApp _ -> error "Can't lower any TApp besides list"
-
-and binder_of_var_id (avar_id : A.var_id) =
-  match avar_id with "_" -> None | _ -> Some avar_id
