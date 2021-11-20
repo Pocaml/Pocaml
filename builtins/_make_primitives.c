@@ -30,3 +30,17 @@ int8_t _unit = 69;
 void *_make_unit() {
     return &_unit;
 }
+
+struct _pocaml_list {
+    void *data;
+    struct _pocaml_list *next;
+};
+
+void *_pocaml_end_list = NULL;
+
+void *_make_list(void *data, void *next) {
+    struct _pocaml_list *p = malloc(sizeof(struct _pocaml_list));
+    p->data = data;
+    p->next = (struct _pocaml_list *) next;
+    return p;
+}
