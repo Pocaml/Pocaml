@@ -10,6 +10,7 @@ type typ =
   | TInt
   | TBool
   | TChar
+  | TString
   | TList of typ
   | TVar of tvar_id
   | TArrow of typ * typ
@@ -30,6 +31,7 @@ and expr =
 and literal =
   | LitInt of int
   | LitChar of char
+  | LitString of string
   | LitList of expr list
   | LitBool of bool
   | LitUnit

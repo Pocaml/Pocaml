@@ -27,6 +27,7 @@ let codegen (Program definitions) =
     | TInt -> i32_t
     | TChar -> i8_t
     | TBool -> i1_t
+    | TString -> raise (CodegenError "String type has not been implemented.")
     | TUnit -> i8_t
     | TList _ -> raise (CodegenError "TApp type is not supported.")
     | TArrow (_, _) -> raise (CodegenError "TArrow type is not supported.")
