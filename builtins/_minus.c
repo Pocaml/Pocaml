@@ -1,15 +1,17 @@
 #include <stdint.h>
-void *_builtin_minus(int32_t n, void *args) {
-    int32_t *int_args = (int32_t *)args;
-    int32_t first = int_args[0];
-    int32_t second = int_args[1];
+#include "builtins.h"
 
-    int32_t *ret = (int32_t *) malloc(sizeof(int32_t));
+_pml_val _builtin__minus(_pml_val *args) {
+    _pml_int *int_args = (_pml_int *)args;
+    _pml_int first = int_args[0];
+    _pml_int second = int_args[1];
+
+    _pml_int *ret = (_pml_int *) malloc(sizeof(_pml_int));
     *ret = first - second;
-    return (void *) ret;
+    return (_pml_val) ret;
 }
 
-void *_minus;
-void _init_minus() {
-    _minus = _make_closure(_builtin_minus, 2);
+_pml_val _minus;
+void _init__minus() {
+    _minus = _make_closure(_builtin__minus, 2);
 }

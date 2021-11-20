@@ -1,46 +1,46 @@
 #include <stdint.h>
 #include <string.h>
+#include "builtins.h"
 
-void *_make_int(int32_t n) {
-    int32_t *p = malloc(sizeof(int32_t));
+_pml_val _make_int(_pml_int n) {
+    _pml_int *p = malloc(sizeof(_pml_int));
     *p = n;
-    return (void *) p;
+    return (_pml_val) p;
 }
 
-void *_make_bool(int8_t bool) {
-    int8_t *p = malloc(sizeof(int8_t));
+_pml_val _make_bool(_pml_bool bool) {
+   _pml_bool *p = malloc(sizeof(_pml_bool));
     *p = bool;
-    return (void *) p;
+    return (_pml_val) p;
 }
 
-void *_make_char(int8_t c) {
-    int8_t *p = malloc(sizeof(int8_t));
+_pml_val _make_char(_pml_char c) {
+    _pml_char *p = malloc(sizeof(_pml_char));
     *p = c;
-    return (void *) p;
+    return (_pml_val) p;
 }
 
-void *_make_string(int8_t *s) {
-    int8_t *p = malloc(strlen(s));
+_pml_val _make_string(_pml_char *s) {
+    _pml_char *p = malloc(strlen(s));
     strcpy(p, s);
-    return (void *) p;
+    return (_pml_val) p;
 }
 
-int8_t _unit = 69;
+_pml_unit _unit = 69;
 
-void *_make_unit() {
+_pml_val _make_unit() {
     return &_unit;
 }
 
-struct _pocaml_list {
-    void *data;
-    struct _pocaml_list *next;
-};
+_pml_list _empty_list = { NULL };
+_pml_val _pml_empty_list = &_empty_list;
 
-void *_pocaml_end_list = NULL;
-
-void *_make_list(void *data, void *next) {
-    struct _pocaml_list *p = malloc(sizeof(struct _pocaml_list));
-    p->data = data;
-    p->next = (struct _pocaml_list *) next;
-    return p;
+_pml_val _make_list(_pml_val data, _pml_val next_list) {
+    _pml_list_node *next_list_node = ((_pml_list *)next_list)->head;
+    _pml_list_node *node = malloc(sizeof(_pml_list_node));
+    node->data = data;
+    node->next = next_list_node;
+    _pml_list *list = malloc(sizeof(_pml_list));
+    list->head = node;
+    return list;
 }

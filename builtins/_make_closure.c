@@ -1,20 +1,14 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdarg.h>
+#include "builtins.h"
 
-typedef void *(*_pocaml_func_t)(int32_t, void *);
+_pml_val _make_closure(_pml_func *fp, _pml_int num_args) {
+    _pml_val closure = malloc(_closure_size_with_args(num_args));
 
-void *_make_closure(_pocaml_func_t f, int32_t num_args) {
-    size_t f_size = sizeof(_pocaml_func_t);
-    size_t two_int_size = 2 * sizeof(int32_t);
-    size_t args_size = sizeof(void *) * (num_args - 1);
-    void *new_closure = malloc(f_size + two_int_size + args_size);
+    _set_closure_fp(closure, fp);
+    _set_closure_required(closure, num_args);
+    _set_closure_supplied(closure, 0);
 
-    _pocaml_func_t *f_ptr = new_closure;
-    int32_t *two_int_ptr = (int32_t *) (new_closure + f_size);
-    *f_ptr = f;
-    *two_int_ptr = num_args;
-    *(two_int_ptr + 1) = 0;
-
-    return new_closure;
+    return closure;
 }
