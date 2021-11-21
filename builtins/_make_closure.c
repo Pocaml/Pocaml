@@ -1,7 +1,6 @@
-#include <stddef.h>
-#include <stdint.h>
-#include <stdarg.h>
+#include <stdlib.h>
 #include "builtins.h"
+
 
 _pml_val _make_closure(_pml_func *fp, _pml_int num_args) {
     _pml_val closure = malloc(_closure_size_with_args(num_args));
