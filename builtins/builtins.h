@@ -39,5 +39,5 @@ _pml_val _make_closure(_pml_func *fp, _pml_int num_args);
 
 /* builtins */
 _pml_func	_builtin__add;
-_pml_val _add;
+extern _pml_val _add;
 _pml_init _init__add;
