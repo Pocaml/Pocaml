@@ -1,5 +1,5 @@
 (*
-   function lambda_lift: t_program -> ll_program optional
+   function lambda_lift: Ir.program -> Ir.program
 *)
 
 open Ir
