@@ -71,9 +71,3 @@ let print_prog = function
       let lexbuf = Lexing.from_string str in
       let prog = Parser.program Lexer.token lexbuf in
       print_endline (string_of_program(Lower_ast.lower_program(prog)))
-
-let print_prog_ll = function
-  | str ->
-      let lexbuf = Lexing.from_string str in
-      let prog = Parser.program Lexer.token lexbuf in
-      Lower_ast.lower_program prog |> Lambda_lift.lambda_lift |> string_of_program |> print_endline

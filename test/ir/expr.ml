@@ -48,5 +48,5 @@ let%expect_test "annotated match expression" =
   [%expect {|
     let a = ( (
      match ( 3 : None ) with
-    |  ( U1 : None ) -> ( 1 : None )
+    |  ( U2 : None ) -> ( 1 : None )
     ) : int ) |}]
