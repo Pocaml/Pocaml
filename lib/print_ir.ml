@@ -1,6 +1,8 @@
 open Ir
 
 
+exception PrintIrError of string
+let error s = raise (PrintIrError s)
 let rec string_of_typ = function
   | TUnit -> "unit"
   | TInt -> "int"
@@ -10,6 +12,7 @@ let rec string_of_typ = function
   | TVar tvar_id -> tvar_id
   | TArrow (t1, t2) -> string_of_typ t1 ^ " -> " ^ string_of_typ t2
   | TNone -> "None"
+  | _ -> error "Not Implemented"
 
 let annotate typ id = 
   let type_str = string_of_typ typ in match type_str with
@@ -35,6 +38,7 @@ and string_of_lit = function
   | LitChar char -> "\'" ^ String.make 1 char ^ "\'"
   | LitList list -> "[" ^ String.concat ";" (List.map string_of_expr list) ^ "]"
   | LitUnit -> "()"
+  | _ -> error "Not implemented"
 
 and string_of_pattern = function
   | PatDefault (typ, id) -> annotate typ id
@@ -67,3 +71,9 @@ let print_prog = function
       let lexbuf = Lexing.from_string str in
       let prog = Parser.program Lexer.token lexbuf in
       print_endline (string_of_program(Lower_ast.lower_program(prog)))
+
+let print_prog_ll = function
+  | str ->
+      let lexbuf = Lexing.from_string str in
+      let prog = Parser.program Lexer.token lexbuf in
+      Lower_ast.lower_program prog |> Lambda_lift.lambda_lift |> string_of_program |> print_endline
