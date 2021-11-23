@@ -12,7 +12,7 @@ let rec string_of_typ = function
   | TVar tvar_id -> tvar_id
   | TArrow (t1, t2) -> string_of_typ t1 ^ " -> " ^ string_of_typ t2
   | TNone -> "None"
-  | _ -> error "Not Implemented"
+  | TString -> "string"
 
 let annotate typ id = 
   let type_str = string_of_typ typ in match type_str with
@@ -38,7 +38,7 @@ and string_of_lit = function
   | LitChar char -> "\'" ^ String.make 1 char ^ "\'"
   | LitList list -> "[" ^ String.concat ";" (List.map string_of_expr list) ^ "]"
   | LitUnit -> "()"
-  | _ -> error "Not implemented"
+  | LitString str -> "\"" ^ str ^ "\""
 
 and string_of_pattern = function
   | PatDefault (typ, id) -> annotate typ id

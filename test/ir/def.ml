@@ -25,7 +25,7 @@ let%expect_test _ =
 
 let%expect_test _ =
   print_prog "let a = \"some string\"";
-  [%expect {| let a = ( [( 's' : None );( 'o' : None );( 'm' : None );( 'e' : None );( ' ' : None );( 's' : None );( 't' : None );( 'r' : None );( 'i' : None );( 'n' : None );( 'g' : None )] : None ) |}]
+  [%expect {| let a = ( "some string" : None ) |}]
 
 let%expect_test _ =
   print_prog "let a = false";

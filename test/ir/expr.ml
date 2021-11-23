@@ -35,8 +35,8 @@ let%expect_test "annotated lambda expression" =
     {| let a = ( ( fun a -> ( ( ( ( ( + : None ) ( a : None ) ) : None ) ( 1 : None ) ) : int ) ) : int -> None ) |}]
 
 let%expect_test "annotated function application" =
-  print_prog "let a = (print \"hello\" : ())";
-  [%expect {| let a = ( ( ( print : None ) ( [( 'h' : None );( 'e' : None );( 'l' : None );( 'l' : None );( 'o' : None )] : None ) ) : unit ) |}]
+  print_prog "let a = (print (\"hello\" : string) : ())";
+  [%expect {| let a = ( ( ( print : None ) ( "hello" : string ) ) : unit ) |}]
 
 let%expect_test "annotated function application with multiple arguments" =
   print_prog "let a = (fn 0 f 1 : bool)";
