@@ -1,6 +1,9 @@
 open Ir
 
 
+exception PrintIrError of string
+let error s = raise (PrintIrError s)
+
 let rec string_of_typ = function
   | TUnit -> "unit"
   | TInt -> "int"
@@ -10,6 +13,8 @@ let rec string_of_typ = function
   | TVar tvar_id -> tvar_id
   | TArrow (t1, t2) -> string_of_typ t1 ^ " -> " ^ string_of_typ t2
   | TNone -> "None"
+  | TString -> "string"
+
 
 let annotate typ id = 
   let type_str = string_of_typ typ in match type_str with
@@ -35,6 +40,7 @@ and string_of_lit = function
   | LitChar char -> "\'" ^ String.make 1 char ^ "\'"
   | LitList list -> "[" ^ String.concat ";" (List.map string_of_expr list) ^ "]"
   | LitUnit -> "()"
+  | LitString str -> "\"" ^ str ^ "\""
 
 and string_of_pattern = function
   | PatDefault (typ, id) -> annotate typ id
