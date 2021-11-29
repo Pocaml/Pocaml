@@ -3,6 +3,7 @@ open Ir
 
 exception PrintIrError of string
 let error s = raise (PrintIrError s)
+
 let rec string_of_typ = function
   | TUnit -> "unit"
   | TInt -> "int"
@@ -13,6 +14,7 @@ let rec string_of_typ = function
   | TArrow (t1, t2) -> string_of_typ t1 ^ " -> " ^ string_of_typ t2
   | TNone -> "None"
   | TString -> "string"
+
 
 let annotate typ id = 
   let type_str = string_of_typ typ in match type_str with
