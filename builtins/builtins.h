@@ -49,4 +49,12 @@ _pml_func	_builtin__minus;
 extern _pml_val _minus;
 _pml_init _init__minus;
 
+_pml_func	_builtin__times;
+extern _pml_val _times;
+_pml_init _init__times;
+
+_pml_func	_builtin__divide;
+extern _pml_val _divide;
+_pml_init _init__divide;
+
 #endif
