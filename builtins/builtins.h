@@ -57,4 +57,12 @@ _pml_func	_builtin__divide;
 extern _pml_val _divide;
 _pml_init _init__divide;
 
+_pml_func	_builtin__less_than;
+extern _pml_val _less_than;
+_pml_init _init__less_than;
+
+_pml_func	_builtin__less_equal;
+extern _pml_val _less_equal;
+_pml_init _init__less_equal;
+
 #endif
