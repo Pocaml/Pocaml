@@ -1,6 +1,8 @@
 #ifndef _POCAML_BUILTINS_H_
 #define _POCAML_BUILTINS_H_
 
+#include <stdint.h>
+
 /* pocaml primitives */
 typedef		int8_t		_pml_char;
 typedef		int8_t		_pml_bool;
@@ -39,6 +41,9 @@ typedef struct _pml_closure_md {
 
 _pml_val _make_closure(_pml_func *fp, _pml_int num_args);
 _pml_val _apply_closure(_pml_val closure, _pml_val arg);
+
+/* pml func helpers */
+_pml_val _get_arg(_pml_val *params, _pml_int i);
 
 /* builtins */
 _pml_func	_builtin__add;

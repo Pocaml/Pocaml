@@ -1,5 +1,5 @@
-#include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 #include "builtins.h"
 
 _pml_val _make_int(_pml_int n) {

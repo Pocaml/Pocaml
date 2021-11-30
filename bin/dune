@@ -1,4 +1,4 @@
 (executable
  (public_name pocaml)
  (name main)
- (libraries pocaml))
+ (libraries pocaml llvm llvm.analysis))

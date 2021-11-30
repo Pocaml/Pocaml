@@ -53,3 +53,7 @@
     parser.ml
     lexer.ml
     print.ml))))
+
+(env
+ (dev
+  (flags (:standard -w -26-27))))

@@ -1,9 +1,6 @@
-(*
-   function codegen: m_program -> llvm optional
-*)
-
 module L = Llvm
 open Ir
+open Fresh
 module StringMap = Map.Make (String)
 
 exception CodegenError of string
@@ -12,94 +9,140 @@ let error s = raise (CodegenError s)
 
 let not_implemented () = error "Not implemented"
 
+type env = Env of L.llvalue StringMap.t * env | EnvNone
+
+let rec lookup n = function
+  | Env (m, parent_env) -> (
+      try StringMap.find n m with Not_found -> lookup n parent_env)
+  | EnvNone -> error ("codegen: unbound variable " ^ n)
+
 (* translate : I.program -> Llvm.module *)
 let codegen (Program definitions) =
   let context = L.global_context () in
   let the_module = L.create_module context "pocaml" in
 
   (* Get types from the context *)
-  let i32_t = L.i32_type context
-  and i8_t = L.i8_type context
-  and i1_t = L.i1_type context (*and void_t     = L.void_type   context*) in
-  (* let get_typ = function A.LitInt   -> i32_t in *)
-  let ltype_of_typ = function
-    | TVar _ -> raise (CodegenError "Cannot have type variables.")
-    | TInt -> i32_t
-    | TChar -> i8_t
-    | TBool -> i1_t
-    | TUnit -> i8_t
-    | TList _ -> raise (CodegenError "TApp type is not supported.")
-    | TArrow (_, _) -> raise (CodegenError "TArrow type is not supported.")
-    | TNone -> raise (CodegenError "Cannot have unknown types.")
-    (* | _ -> raise (CodegenError "Type is not supported.") *)
-  in
-  let ltype_of_expr e = ltype_of_typ (typ_of_expr e) in
+  let void_t = L.void_type context in
+  let pml_int_t = L.i32_type context in
+  let pml_val_t = L.pointer_type void_t in
+  let pml_func_t = L.function_type pml_val_t [| L.pointer_type pml_val_t |] in
+  let pml_init_t = L.function_type void_t [||] in
 
-  (*
-  let fresh_var =
-    let _fresh_var = ref 1 in
-      _fresh_var := _fresh_var + 1;
-      string_of_int _fresh_var
+  (* Define main function and get the builder *)
+  let main_func =
+    let ftype = L.function_type pml_int_t [||] in
+    L.define_function "main" ftype the_module
   in
-  *)
-  let fresh_var =
-    let n = ref 0 in
-    fun () ->
-      n := !n + 1;
-      string_of_int !n
+  let main_builder =
+    let entry_block = L.entry_block main_func in
+    L.builder_at_end context entry_block
   in
 
-  let printf_t : L.lltype =
-    L.var_arg_function_type i32_t [| L.pointer_type i8_t |]
-  in
-  let printf_func : L.llvalue =
-    L.declare_function "printf" printf_t the_module
-  in
-
-  (* declare global variables for top level non-lambdas *)
-  (* Create a map of global variables after creating each *)
-  (* let global_vars : L.llvalue StringMap.t = *)
-  (*   let global_var m (Def (b, e)) = *)
-  (*     let init = *)
-  (*       match t with *)
-  (*       | A.Float -> L.const_float (ltype_of_typ t) 0.0 *)
-  (*       | _ -> L.const_int (ltype_of_typ t) 0 *)
-  (*     in *)
-  (*     StringMap.add n (L.define_global n init the_module) m *)
-  (*   in *)
-  (*   List.fold_left global_var StringMap.empty definitions *)
-  (* in *)
-
-  let function_decls : (L.llvalue * definition) StringMap.t =
-    let function_decl m (Def (dname, dexpr))=
-              StringMap.add dname
-                (L.define_function dname (ltype_of_expr dexpr) the_module, (Def (dname, dexpr)))
-                m
+  (* Declare helpers *)
+  let get_arg_f =
+    let ftype =
+      L.function_type pml_val_t [| L.pointer_type pml_val_t; pml_int_t |]
     in
-    List.fold_left function_decl StringMap.empty definitions
+    L.declare_function "_get_arg" ftype the_module
   in
 
-  (* Fill in the body of the given function *)
-  let build_function_body (Def (dname, dexpr))=
-            let the_function, _ = StringMap.find dname function_decls in
-            let builder =
-              L.builder_at_end context (L.entry_block the_function)
-            in
-            let int_format_str =
-              L.build_global_stringptr "%d\n" "fmt" builder
-            in
+  let make_int_f =
+    let ftype = L.function_type pml_val_t [| pml_int_t |] in
+    L.declare_function "_make_int" ftype the_module
+  in
 
-            let rec llexpr builder (e : expr) =
+  (* Declare the builtins *)
+  let builtins : env =
+    let builtin_names = [ "_add"; "_minus" ] in
+    let builtin m n =
+      let f = L.declare_global pml_val_t n the_module in
+      StringMap.add n f m
+    in
+    let builtins' = List.fold_left builtin StringMap.empty builtin_names in
+    Env (builtins', EnvNone)
+  in
+
+  (* Declare the builtin-init function *)
+  let builtins_init : L.llvalue =
+    L.declare_function "_init__builtins" pml_init_t the_module
+  in
+
+  (* Build call in main for the buildin-init function *)
+  let _ = L.build_call builtins_init [||] "" main_builder in
+
+  (* Define top-level values *)
+  let toplevels : env =
+    let toplevel m (Def (n, _)) =
+      let v = L.define_global n (L.const_null pml_val_t) the_module in
+      StringMap.add n v m
+    in
+    let toplevels' = List.fold_left toplevel StringMap.empty definitions in
+    Env (toplevels', builtins)
+  in
+
+  (* Function that builds the expression evaluation *)
+  let build_expr f builder env e =
+    ( L.build_call make_int_f
+        [| L.const_int pml_int_t 0 |]
+        (fresh_name ()) builder,
+      builder )
+  in
+
+  (* Define top-level lambda's; keep a dictionary (key: top-level name, value: lambda's function definition)*)
+  let topfuncs : L.llvalue StringMap.t =
+    let topfunc m (Def (n, e)) =
+      match e with
+      | Lambda (t, _, _) ->
+          (* get chaining lambda arguments *)
+          let (typed_params, body) : (int * typ * string) list * expr =
+            let rec collapsed_lambda' i e =
               match e with
-              | Lit (_, LitInt i) -> L.const_int i32_t i
-              | Apply (_, Var (_, "print_int"), Lit (_, LitInt _)) ->
-                  L.build_call printf_func
-                    [| int_format_str; llexpr builder e |]
-                    (fresh_var ()) builder
-              | _ -> raise (CodegenError "Unexpected case")
+              | Lambda (t, p, body) ->
+                  let collapsed_t_p, collapsed_body =
+                    collapsed_lambda' (i + 1) body
+                  in
+                  ((i, t, p) :: collapsed_t_p, collapsed_body)
+              | _ -> ([], e)
             in
-            ignore (L.build_ret (llexpr builder dexpr) builder)
+            collapsed_lambda' 0 e
+          in
+          (* define the anonymous function *)
+          let f = L.define_function (fresh_name ()) pml_func_t the_module in
+          let entry_block = L.entry_block f in
+          let builder = L.builder_at_end context entry_block in
+          let params_ptr = Array.get (L.params f) 0 in
+          (* get the parameters into the environment *)
+          let params_env =
+            let get_param m (i, _, n) =
+              let v =
+                L.build_call get_arg_f
+                  [| params_ptr; L.const_int pml_int_t i |]
+                  n builder
+              in
+              StringMap.add n v m
+            in
+            let params_env' =
+              List.fold_left get_param StringMap.empty typed_params
+            in
+            Env (params_env', toplevels)
+          in
+          (* build the expression evaluation *)
+          let evaluated_expr, builder = build_expr f builder params_env body in
+          (* add the return statement *)
+          let _ = L.build_ret evaluated_expr builder in
+          (* map the top-level lambda name to the anonymous function *)
+          StringMap.add n f m
+      | _ -> m
+    in
+    List.fold_left topfunc StringMap.empty definitions
   in
 
-  List.iter build_function_body definitions;
+  (* Define top-level init functions; keep a dictionary (key: top-level name, value: init's function definition)*)
+
+  (* Build calls in main for the top-evel init functions *)
+
+  (* Terminate main with a return *)
+  let _ = L.build_ret (L.const_int pml_int_t 0) main_builder in
+
+  (* Return the module *)
   the_module

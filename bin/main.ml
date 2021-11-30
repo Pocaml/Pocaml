@@ -1,16 +1,5 @@
 open Pocaml
 
-(*
-   Parse to ast
-   Desugar ast (optional)
-   Check ast (optional)
-   Infer types
-   Lambda lift
-   Defunctionalize
-   Monomorphize
-   Codegen
-*)
-
 type action = Ast | LLVM_IR | Compile
 
 let () =
@@ -43,6 +32,6 @@ let () =
       match !action with
       | Ast -> ()
       | LLVM_IR -> print_string (Llvm.string_of_llmodule m)
-      (* | Compile -> Llvm_analysis.assert_valid_module m;
-                   print_string (Llvm.string_of_llmodule m) *)
-      | Compile -> print_string (Llvm.string_of_llmodule m))
+      | Compile ->
+          Llvm_analysis.assert_valid_module m;
+          print_string (Llvm.string_of_llmodule m))
