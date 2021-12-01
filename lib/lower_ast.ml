@@ -82,11 +82,11 @@ and lower_conditional ann cond e1 e2 =
       ] )
 
 and lower_letin ann var_id e1 e2 =
-    I.Letin
-      ( ann I.TNone,
-        frseh_if_wild var_id,
-        lower_expr no_annotation e1,
-        lower_expr no_annotation e2 )
+  I.Letin
+    ( ann I.TNone,
+      frseh_if_wild var_id,
+      lower_expr no_annotation e1,
+      lower_expr no_annotation e2 )
 
 and lower_apply ann e1 e2 =
   I.Apply (ann I.TNone, lower_expr no_annotation e1, lower_expr no_annotation e2)
@@ -119,7 +119,7 @@ and lower_pat =
     | A.LitInt i -> I.LitInt i
     | A.LitChar c -> I.LitChar c
     | A.LitBool b -> I.LitBool b
-    | A.LitList [] -> I.LitList []
+    | A.LitList [] -> I.LitListEnd
     | A.LitList _ -> error "Can't lower pattern matching on non-emtpy list"
     | A.LitString _ -> error "Can't lower pattern matching on string"
     | A.LitUnit -> error "Can't lower pattern matching on unit"
@@ -130,23 +130,41 @@ and lower_pat =
   | A.PatCons (pat1, pat2) -> (
       match (pat1, pat2) with
       | A.PatId avar_id1, A.PatId avar_id2 ->
-          I.PatCons
-            (I.TNone, frseh_if_wild avar_id1, frseh_if_wild avar_id2)
+          I.PatCons (I.TNone, frseh_if_wild avar_id1, frseh_if_wild avar_id2)
       | A.PatId avar_id1, A.PatLit (A.LitList []) ->
           I.PatConsEnd (I.TNone, frseh_if_wild avar_id1)
       | _ -> error "Can't lower recursive patterns yet")
 
 and lower_lit ann alit =
-  let ilit =
-    match alit with
-    | A.LitInt i -> I.LitInt i
-    | A.LitChar c -> I.LitChar c
-    | A.LitBool b -> I.LitBool b
-    | A.LitList es -> I.LitList (List.map (lower_expr no_annotation) es)
-    | A.LitString s -> I.LitString s
-    | A.LitUnit -> I.LitUnit
-  in
-  I.Lit (ann I.TNone, ilit)
+  match alit with
+  | A.LitInt i -> I.Lit (ann I.TNone, I.LitInt i)
+  | A.LitChar c -> I.Lit (ann I.TNone, I.LitChar c)
+  | A.LitBool b -> I.Lit (ann I.TNone, I.LitBool b)
+  | A.LitList [] -> I.Lit (ann I.TNone, I.LitListEnd)
+  | A.LitList (e :: es) ->
+      let outerCons x =
+        I.Apply
+          ( ann I.TNone,
+            I.Apply
+              ( I.TNone,
+                I.Var (I.TNone, Print.string_of_binop ConsOp),
+                lower_expr no_annotation e ),
+            x )
+      in
+      let innerCons =
+        List.fold_right
+          (fun e l ->
+            I.Apply
+              ( I.TNone,
+                I.Apply
+                  (I.TNone, I.Var (I.TNone, Print.string_of_binop ConsOp), e),
+                l ))
+          (List.map (lower_expr no_annotation) es)
+          (I.Lit (I.TNone, I.LitListEnd))
+      in
+      outerCons innerCons
+  | A.LitString s -> I.Lit (ann I.TNone, I.LitString s)
+  | A.LitUnit -> I.Lit (ann I.TNone, I.LitUnit)
 
 and lower_typ = function
   | A.TVar tvar_id -> I.TVar tvar_id

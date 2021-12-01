@@ -71,7 +71,8 @@ literal:
   | LITCHAR                             { LitChar($1) }
 
 list_literal:
-    /* empty list */        { [] } 
+  | /* nothing */           { [] }
+  | expr                    { [$1] }
   | expr SEMI list_literal  { $1 :: $3 }
 
 apply:

@@ -6,6 +6,7 @@ let rec string_of_typ = function
   | TInt -> "int"
   | TBool -> "bool"
   | TChar -> "char"
+  | TString -> "string"
   | TList typ -> string_of_typ typ
   | TVar tvar_id -> tvar_id
   | TArrow (t1, t2) -> string_of_typ t1 ^ " -> " ^ string_of_typ t2
@@ -33,8 +34,9 @@ and string_of_lit = function
   | LitInt int -> string_of_int int
   | LitBool bool -> string_of_bool bool
   | LitChar char -> "\'" ^ String.make 1 char ^ "\'"
-  | LitList list -> "[" ^ String.concat ";" (List.map string_of_expr list) ^ "]"
+  | LitString string -> "\"" ^ string ^ "\""
   | LitUnit -> "()"
+  | LitListEnd -> "[]"
 
 and string_of_pattern = function
   | PatDefault (typ, id) -> annotate typ id

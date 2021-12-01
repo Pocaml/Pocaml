@@ -23,7 +23,11 @@ let codegen (Program definitions) =
 
   (* Get types from the context *)
   let void_t = L.void_type context in
+  let pml_char_t = L.i8_type context in
+  let pml_bool_t = L.i8_type context in
+  let pml_unit_t = L.i8_type context in
   let pml_int_t = L.i32_type context in
+  let pml_string_t = L.pointer_type (L.i8_type context) in
   let pml_val_t = L.pointer_type void_t in
   let pml_func_t = L.function_type pml_val_t [| L.pointer_type pml_val_t |] in
   let pml_init_t = L.function_type void_t [||] in
@@ -51,7 +55,31 @@ let codegen (Program definitions) =
     L.declare_function "_make_int" ftype the_module
   in
 
+  let make_bool_f =
+    let ftype = L.function_type pml_val_t [| pml_bool_t |] in
+    L.declare_function "_make_bool" ftype the_module
+  in
+
+  let make_char_f =
+    let ftype = L.function_type pml_val_t [| pml_char_t |] in
+    L.declare_function "_make_char" ftype the_module
+  in
+
+  let make_string_f =
+    let ftype = L.function_type pml_val_t [| pml_string_t |] in
+    L.declare_function "_make_string" ftype the_module
+  in
+
+  let make_unit_f =
+    let ftype = L.function_type pml_val_t [||] in
+    L.declare_function "_make_unit" ftype the_module
+  in
+
   (* Declare the builtins *)
+  let pml_empty_list =
+    L.declare_global pml_val_t "_pml_empty_list" the_module
+  in
+
   let builtins : env =
     let builtin_names = [ "_add"; "_minus" ] in
     let builtin m n =
@@ -81,11 +109,50 @@ let codegen (Program definitions) =
   in
 
   (* Function that builds the expression evaluation *)
-  let build_expr f builder env e =
-    ( L.build_call make_int_f
-        [| L.const_int pml_int_t 0 |]
-        (fresh_name ()) builder,
-      builder )
+  let build_expr f builder env = function
+    | Lit (t, lit) -> (
+        match lit with
+        | LitInt n ->
+            let llval =
+              L.build_call make_int_f
+                [| L.const_int pml_int_t n |]
+                (fresh_name ()) builder
+            in
+            (llval, builder)
+        | LitChar c ->
+            let llval =
+              L.build_call make_char_f
+                [| L.const_int pml_char_t (Char.code c) |]
+                (fresh_name ()) builder
+            in
+            (llval, builder)
+        | LitString s -> not_implemented ()
+            (* let llval = *)
+            (*   L.build_call make_char_f *)
+            (*     [| L.const_int pml_char_t (Char.code c) |] *)
+            (*     (fresh_name ()) builder *)
+            (* in *)
+            (* (llval, builder) *)
+        | LitBool b ->
+            let llval =
+              L.build_call make_bool_f
+                [| L.const_int pml_bool_t (Bool.to_int b) |]
+                (fresh_name ()) builder
+            in
+            (llval, builder)
+        | LitUnit ->
+            let llval =
+              L.build_call make_unit_f
+                [||]
+                (fresh_name ()) builder
+            in
+            (llval, builder)
+        | LitListEnd -> (pml_empty_list, builder) )
+    | Var (t, vid) -> not_implemented ()
+    | Letin (t, vid, e1, e2) -> not_implemented ()
+    | Lambda (t, vid, e) -> not_implemented ()
+    | Apply (t, e1, e2) -> not_implemented ()
+    | Match (t, e, arms) -> not_implemented ()
   in
 
   (* Define top-level lambda's; keep a dictionary (key: top-level name, value: lambda's function definition)*)

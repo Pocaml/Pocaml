@@ -32,9 +32,9 @@ and literal =
   | LitInt of int
   | LitChar of char
   | LitString of string
-  | LitList of expr list
   | LitBool of bool
   | LitUnit
+  | LitListEnd
 
 and pat =
   | PatDefault of typ * var_id
