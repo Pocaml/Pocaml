@@ -69,6 +69,7 @@ literal:
   | LITBOOL                             { LitBool($1) }
   | LITSTRING                           { LitString($1) }
   | LITCHAR                             { LitChar($1) }
+  | LEFT_PAREN RIGHT_PAREN              { LitUnit }
 
 list_literal:
   | /* nothing */           { [] }
@@ -84,7 +85,6 @@ atom:
   | var { $1 }
   | LEFT_PAREN expr COLON typ RIGHT_PAREN { Annotation($2, $4) }
   | LEFT_PAREN expr RIGHT_PAREN { $2 }
-  | LEFT_PAREN RIGHT_PAREN { Lit(LitUnit) }
 
 expr:
     NOT expr         { UnaryOp(Not, $2) }
