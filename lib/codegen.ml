@@ -11,10 +11,8 @@ let not_implemented () = error "Not implemented"
 
 type env = Env of L.llvalue StringMap.t * env | EnvNone
 
-let rec lookup n = function
-  | Env (m, parent_env) -> (
-      try StringMap.find n m with Not_found -> lookup n parent_env)
-  | EnvNone -> error ("codegen: unbound variable " ^ n)
+let print_lltype_of_llvalue llval =
+  print_endline (L.string_of_lltype (L.type_of llval))
 
 (* translate : I.program -> Llvm.module *)
 let codegen (Program definitions) =
@@ -75,20 +73,32 @@ let codegen (Program definitions) =
     L.declare_function "_make_unit" ftype the_module
   in
 
+  let make_closure_f =
+    let ftype =
+      L.function_type pml_val_t [| L.pointer_type pml_func_t; pml_int_t |]
+    in
+    L.declare_function "_make_closure" ftype the_module
+  in
+
+  let apply_closure_f =
+    let ftype = L.function_type pml_val_t [| pml_val_t; pml_val_t |] in
+    L.declare_function "_apply_closure" ftype the_module
+  in
+
   (* Declare the builtins *)
   let pml_empty_list =
     L.declare_global pml_val_t "_pml_empty_list" the_module
   in
 
-  let builtins : env =
-    let builtin_names = [ "_add"; "_minus" ] in
+  let builtins : L.llvalue StringMap.t =
     let builtin m n =
       let f = L.declare_global pml_val_t n the_module in
       StringMap.add n f m
     in
-    let builtins' = List.fold_left builtin StringMap.empty builtin_names in
-    Env (builtins', EnvNone)
+    List.fold_left builtin StringMap.empty Print.builtin_names
   in
+
+  let builtins_env : env = Env (builtins, EnvNone) in
 
   (* Declare the builtin-init function *)
   let builtins_init : L.llvalue =
@@ -99,60 +109,92 @@ let codegen (Program definitions) =
   let _ = L.build_call builtins_init [||] "" main_builder in
 
   (* Define top-level values *)
-  let toplevels : env =
+  let toplevels : L.llvalue StringMap.t =
     let toplevel m (Def (n, _)) =
       let v = L.define_global n (L.const_null pml_val_t) the_module in
       StringMap.add n v m
     in
-    let toplevels' = List.fold_left toplevel StringMap.empty definitions in
-    Env (toplevels', builtins)
+    List.fold_left toplevel StringMap.empty definitions
+  in
+  let toplevels_env : env = Env (toplevels, builtins_env) in
+
+  (* This `lookup` is actually more complicated than just looking up the llvalue.
+     Since LLVM globals are actually pointers to the values, we have to first load
+     the globals into a local variable, and then use it accordingly. However,
+     the current hacky approach actually loads it everytime it is beging looked up,
+     so there could be multiple locals variables that point to the same global variable.
+     It works, but we should probably think of something better. *)
+  let lookup n builder env =
+    let rec lookup' n f = function
+      | Env (m, parent_env) -> (
+          try StringMap.find n m with Not_found -> lookup' n f parent_env)
+      | EnvNone -> f ()
+    in
+    let lookup_toplevel () =
+      let unfound () = error ("codegen: unbound variable " ^ n) in
+      let global = lookup' n unfound toplevels_env in
+      L.build_load global n builder
+    in
+    lookup' n lookup_toplevel env
+  in
+
+  let add_var_to_scope k v env =
+    let m = StringMap.singleton k v in
+    Env (m, env)
   in
 
   (* Function that builds the expression evaluation *)
-  let build_expr f builder env = function
-    | Lit (t, lit) -> (
-        match lit with
-        | LitInt n ->
-            let llval =
-              L.build_call make_int_f
-                [| L.const_int pml_int_t n |]
-                (fresh_name ()) builder
-            in
-            (llval, builder)
-        | LitChar c ->
-            let llval =
-              L.build_call make_char_f
-                [| L.const_int pml_char_t (Char.code c) |]
-                (fresh_name ()) builder
-            in
-            (llval, builder)
-        | LitString s -> not_implemented ()
-            (* let llval = *)
-            (*   L.build_call make_char_f *)
-            (*     [| L.const_int pml_char_t (Char.code c) |] *)
-            (*     (fresh_name ()) builder *)
-            (* in *)
-            (* (llval, builder) *)
-        | LitBool b ->
-            let llval =
-              L.build_call make_bool_f
-                [| L.const_int pml_bool_t (Bool.to_int b) |]
-                (fresh_name ()) builder
-            in
-            (llval, builder)
-        | LitUnit ->
-            let llval =
-              L.build_call make_unit_f
-                [||]
-                (fresh_name ()) builder
-            in
-            (llval, builder)
-        | LitListEnd -> (pml_empty_list, builder) )
-    | Var (t, vid) -> not_implemented ()
-    | Letin (t, vid, e1, e2) -> not_implemented ()
-    | Lambda (t, vid, e) -> not_implemented ()
-    | Apply (t, e1, e2) -> not_implemented ()
+  let rec build_expr f builder env = function
+    | Lambda (t, vid, e) ->
+        error "codegen: should not have non-top-level lambdas expr"
+    | Lit (_, lit) -> build_expr_lit builder lit
+    | Var (t, vid) -> (lookup vid builder env, builder)
+    | Letin (t, vid, e1, e2) ->
+        let llval1, builder = build_expr f builder env e1 in
+        let env = add_var_to_scope vid llval1 env in
+        build_expr f builder env e2
+    | Apply (t, e1, e2) ->
+        let llval1, builder = build_expr f builder env e1 in
+        let llval2, builder = build_expr f builder env e2 in
+        let llval =
+          L.build_call apply_closure_f [| llval1; llval2 |] (fresh_name ())
+            builder
+        in
+        (llval, builder)
     | Match (t, e, arms) -> not_implemented ()
+  (* TODO *)
+  and build_expr_lit builder = function
+    | LitInt n ->
+        let llval =
+          L.build_call make_int_f
+            [| L.const_int pml_int_t n |]
+            (fresh_name ()) builder
+        in
+        (llval, builder)
+    | LitChar c ->
+        let llval =
+          L.build_call make_char_f
+            [| L.const_int pml_char_t (Char.code c) |]
+            (fresh_name ()) builder
+        in
+        (llval, builder)
+    | LitString s ->
+        let llval = L.build_global_stringptr s (fresh_string_name ()) builder in
+        let llval =
+          L.build_call make_string_f [| llval |] (fresh_name ()) builder
+        in
+        (llval, builder)
+    | LitBool b ->
+        let llval =
+          L.build_call make_bool_f
+            [| L.const_int pml_bool_t (Bool.to_int b) |]
+            (fresh_name ()) builder
+        in
+        (llval, builder)
+    | LitUnit ->
+        let llval = L.build_call make_unit_f [||] (fresh_name ()) builder in
+        (llval, builder)
+    | LitListEnd -> (pml_empty_list, builder)
   in
 
   (* Define top-level lambda's; keep a dictionary (key: top-level name, value: lambda's function definition)*)
@@ -191,7 +233,7 @@ let codegen (Program definitions) =
             let params_env' =
               List.fold_left get_param StringMap.empty typed_params
             in
-            Env (params_env', toplevels)
+            Env (params_env', EnvNone)
           in
           (* build the expression evaluation *)
           let evaluated_expr, builder = build_expr f builder params_env body in
@@ -205,8 +247,44 @@ let codegen (Program definitions) =
   in
 
   (* Define top-level init functions; keep a dictionary (key: top-level name, value: init's function definition)*)
+  let topinits : L.llvalue StringMap.t =
+    let topinit m (Def (n, e)) =
+      let f = L.define_function ("_init_" ^ n) pml_init_t the_module in
+      let entry_block = L.entry_block f in
+      let builder = L.builder_at_end context entry_block in
+      match e with
+      | Lambda _ ->
+          let global = StringMap.find n toplevels in
+          let topfunc = StringMap.find n topfuncs in
+          let argn = Array.length (L.param_types (L.type_of topfunc)) in
+          let llval =
+            L.build_call make_closure_f
+              [| topfunc; L.const_int pml_int_t argn |]
+              (fresh_name ()) builder
+          in
+          (* store the llval in the top-level *)
+          let _ = L.build_store llval global builder in
+          (* return void *)
+          let _ = L.build_ret_void builder in
+          StringMap.add n f m
+      | _ ->
+          let global = StringMap.find n toplevels in
+          (* build the expression evaluation *)
+          let evaluated_expr, builder = build_expr f builder EnvNone e in
+          (* store the result in the top-level *)
+          let _ = L.build_store evaluated_expr global builder in
+          (* return void *)
+          let _ = L.build_ret_void builder in
+          StringMap.add n f m
+    in
+    List.fold_left topinit StringMap.empty definitions
+  in
 
   (* Build calls in main for the top-evel init functions *)
+  let () =
+    let build_call_init _ f = ignore (L.build_call f [||] "" main_builder) in
+    StringMap.iter build_call_init topinits
+  in
 
   (* Terminate main with a return *)
   let _ = L.build_ret (L.const_int pml_int_t 0) main_builder in

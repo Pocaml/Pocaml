@@ -19,20 +19,38 @@ let string_of_params = function
 let string_of_unop = function Not -> "not"
 
 let string_of_binop = function
-  | PlusOp -> "+"
-  | MinusOp -> "-"
-  | TimesOp -> "*"
-  | DivideOp -> "/"
-  | LtOp -> "<"
-  | LeOp -> "<="
-  | GtOp -> ">"
-  | GeOp -> ">="
-  | EqOp -> "="
-  | NeOp -> "!="
-  | OrOp -> "||"
-  | AndOp -> "&&"
-  | ConsOp -> "::"
-  | SeqOp -> ";"
+  | PlusOp -> "_add"
+  | MinusOp -> "_minus"
+  | TimesOp -> "_times"
+  | DivideOp -> "_divide"
+  | LtOp -> "lt"
+  | LeOp -> "_le"
+  | GtOp -> "_gt"
+  | GeOp -> "_ge"
+  | EqOp -> "_eq"
+  | NeOp -> "_ne"
+  | OrOp -> "_or"
+  | AndOp -> "_and"
+  | ConsOp -> "_cons"
+  | SeqOp -> "_seq"
+
+let builtin_names =
+  [
+    "_add";
+    "_minus";
+    "_times";
+    "_divide";
+    "lt";
+    "_le";
+    "_gt";
+    "_ge";
+    "_eq";
+    "_ne";
+    "_or";
+    "_and";
+    "_cons";
+    "_seq";
+  ]
 
 let rec string_of_expr = function
   | Lit literal -> string_of_lit literal
