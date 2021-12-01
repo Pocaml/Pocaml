@@ -4,7 +4,7 @@
 
 _pml_val _add;
 
-void *_builtin_add(void **args)
+_pml_val _builtin__add(_pml_val *args)
 {
 	_pml_int *left_operand, *right_operand;
 	_pml_int *res = (_pml_int *) malloc(sizeof(_pml_int));
@@ -18,5 +18,5 @@ void *_builtin_add(void **args)
 
 void _init_add()
 {
-	_add = _make_closure(_builtin_add, 2);
+	_add = _make_closure(_builtin__add, 2);
 }

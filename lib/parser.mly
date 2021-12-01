@@ -72,7 +72,8 @@ literal:
   | LEFT_PAREN RIGHT_PAREN              { LitUnit }
 
 list_literal:
-    /* empty list */        { [] } 
+  | /* nothing */           { [] }
+  | expr                    { [$1] }
   | expr SEMI list_literal  { $1 :: $3 }
 
 apply:

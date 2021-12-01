@@ -13,7 +13,7 @@ let%expect_test "lift lambdas in list" =
   [%expect {|
     let L1 = ( ( fun a -> ( a : int ) ) : int -> None )
     let L2 = ( ( fun b -> ( b : int ) ) : int -> None )
-    let lambda_list = ( [( L1 : int -> None );( L2 : int -> None )] : int -> int ) |}]
+    let lambda_list = ( ( ( ( ( :: : None ) ( L1 : int -> None ) ) : None ) ( ( ( ( ( :: : None ) ( L2 : int -> None ) ) : None ) ( [] : None ) ) : None ) ) : int -> int ) |}]
 
 let%expect_test "lift lambdas in letin expression" =
   print_prog_ll "let (a : int -> int) = let a = (3 : int) in (fun (b: int) -> ((b : int) + (a : int) : int) : int -> int)";
