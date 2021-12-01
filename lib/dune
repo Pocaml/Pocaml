@@ -54,6 +54,27 @@
     lexer.ml
     print.ml))))
 
+(rule
+ (alias pprint_ir)
+ (target pprint_ir)
+ (deps
+  print_ir.ml
+  ir.ml
+  (alias lexer)
+  (alias parser))
+ (action
+  (chdir
+   %{workspace_root}/lib
+   (run
+    %{bin:ocamlopt}
+    -o
+    pprint_ir
+    ir.ml
+    parser.mli
+    parser.ml
+    lexer.ml
+    print_ir.ml))))
+
 (env
  (dev
   (flags (:standard -w -26-27))))

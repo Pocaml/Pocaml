@@ -26,6 +26,7 @@ let rec annotate t1 t2 =
   | I.TBool, I.TBool -> I.TBool
   | I.TChar, I.TChar -> I.TChar
   | I.TInt, I.TInt -> I.TInt
+  | I.TString, I.TString -> I.TString
   | I.TUnit, I.TUnit -> I.TUnit
   | I.TArrow (t11, t12), I.TArrow (t21, t22) ->
       I.TArrow (annotate t11 t21, annotate t12 t22)
@@ -136,15 +137,13 @@ and lower_pat =
       | _ -> error "Can't lower recursive patterns yet")
 
 and lower_lit ann alit =
-  let i_expr_of_char c = I.Lit (I.TNone, I.LitChar c) in
   let ilit =
     match alit with
     | A.LitInt i -> I.LitInt i
     | A.LitChar c -> I.LitChar c
     | A.LitBool b -> I.LitBool b
     | A.LitList es -> I.LitList (List.map (lower_expr no_annotation) es)
-    | A.LitString s ->
-      I.LitList (List.map i_expr_of_char (char_list_of_string s))
+    | A.LitString s -> I.LitString s
     | A.LitUnit -> I.LitUnit
   in
   I.Lit (ann I.TNone, ilit)
@@ -155,7 +154,7 @@ and lower_typ = function
   | A.TCon "bool" -> I.TBool
   | A.TCon "char" -> I.TChar
   | A.TCon "()" -> I.TUnit
-  | A.TCon "string" -> I.TList TChar
+  | A.TCon "string" -> I.TString
   | A.TApp (A.TCon "list", t) -> I.TList (lower_typ t)
   | A.TArrow (t1, t2) -> I.TArrow (lower_typ t1, lower_typ t2)
   | A.TNone -> I.TNone
