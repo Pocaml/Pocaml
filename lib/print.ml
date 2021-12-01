@@ -16,7 +16,7 @@ let string_of_param = function
 let string_of_params = function
   | params -> String.concat " " (List.map string_of_param params)
 
-let string_of_unop = function Not -> "not"
+let string_of_unop = function Not -> "_not"
 
 let string_of_binop = function
   | PlusOp -> "_add"
@@ -36,6 +36,7 @@ let string_of_binop = function
 
 let builtin_names =
   [
+    "_not";
     "_add";
     "_minus";
     "_times";
