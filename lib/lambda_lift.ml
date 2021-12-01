@@ -45,20 +45,6 @@ let add_formal (lambda : expr) (var : expr) =
    Ir.program -> Ir.expr list -> Ir.expr -> (Ir.expr * Ir.program)
 *)
 let rec lift (p : program) (ctx : expr list) = function
-  | Lit (ty, lit) ->
-      let lit', p' =
-        match lit with
-        (* Only LitList may associate with expr that contains lambda *)
-        | LitList es ->
-            let lift_lambda_in_list (es, p) e =
-              let e', p' = lift p ctx e in
-              (e' :: es, p')
-            in
-            let es', p' = List.fold_left lift_lambda_in_list ([], p) es in
-            (LitList (List.rev es'), p')
-        | lit -> (lit, p)
-      in
-      (Lit (ty, lit'), p')
   | Lambda (ty, id, e) ->
       let e', p' = lift p ctx e in
       let l = Lambda (ty, id, e') in
@@ -91,15 +77,7 @@ let rec lift (p : program) (ctx : expr list) = function
       returns the updated accumulator
     *)
       let lift_lambda_in_case (p, ctx, lst) (pat, e) =
-        let lift_lambda_in_pat (p : program) = function
-          | PatLit (ty, lit) ->
-              let lit_expr, p' = lift p ctx (Lit (ty, lit)) in
-              let lit' =
-                match lit_expr with Lit (_, lit) -> lit | _ -> error "BUG"
-              in
-              (PatLit (ty, lit'), p')
-          | pat -> (pat, p)
-        in
+        (* no expr in pat -> don't have to worry about lifting lambdas in pat *)
         let update_ctx ctx = function
           | PatDefault (ty, id) -> List.rev (Var (ty, id) :: ctx)
           | PatLit (_, _) -> ctx
@@ -107,10 +85,9 @@ let rec lift (p : program) (ctx : expr list) = function
               List.rev (Var (ty, id2) :: Var (ty, id1) :: ctx)
           | PatConsEnd (ty, id) -> List.rev (Var (ty, id) :: ctx)
         in
-        let pat', p' = lift_lambda_in_pat p pat in
-        let ctx' = update_ctx ctx pat' in
-        let e', p'' = lift p' ctx' e in
-        (p'', ctx, (pat', e') :: lst)
+        let ctx' = update_ctx ctx pat in
+        let e', p' = lift p ctx' e in
+        (p', ctx, (pat, e') :: lst)
       in
       let e1', p' = lift p ctx e1 in
       let p'', _, cases' =
