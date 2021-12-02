@@ -1,6 +1,6 @@
 open Pocaml
 
-type action = Ast | IR | LLVM_IR | Compile
+type action = Ast | IR | Lambda | LLVM_IR | Compile
 
 let () =
   let action = ref Compile in
@@ -10,6 +10,9 @@ let () =
       ("-a", Arg.Unit (set_action Ast), "Print the AST");
       ("-i", Arg.Unit (set_action IR), "Print the IR");
       (*("-s", Arg.Unit (set_action Sast), "Print the SAST");*)
+      ( "-lambda",
+        Arg.Unit (set_action Lambda),
+        "Print the IR after lambda-lifting" );
       ("-l", Arg.Unit (set_action LLVM_IR), "Print the generated LLVM IR");
       ( "-c",
         Arg.Unit (set_action Compile),
@@ -24,7 +27,12 @@ let () =
   let program = Parser.program Lexer.token lexbuf in
   match !action with
   | Ast -> print_string (Print.string_of_program program)
-  | IR -> print_string (Print_ir.string_of_program (Lower_ast.lower_program(program)))
+  | IR ->
+      print_string
+        (Print_ir.string_of_program (Lower_ast.lower_program program))
+  | Lambda ->
+      program |> Lower_ast.lower_program |> Type_infer.type_infer
+      |> Lambda_lift.lambda_lift |> Print_ir.string_of_program |> print_string
   | _ -> (
       let m =
         program |> Lower_ast.lower_program |> Type_infer.type_infer
@@ -34,6 +42,7 @@ let () =
       match !action with
       | Ast -> ()
       | IR -> ()
+      | Lambda -> ()
       | LLVM_IR -> print_string (Llvm.string_of_llmodule m)
       | Compile ->
           Llvm_analysis.assert_valid_module m;
