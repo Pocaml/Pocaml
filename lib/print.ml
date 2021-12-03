@@ -23,12 +23,12 @@ let string_of_binop = function
   | MinusOp -> "_minus"
   | TimesOp -> "_times"
   | DivideOp -> "_divide"
-  | LtOp -> "lt"
-  | LeOp -> "_le"
-  | GtOp -> "_gt"
-  | GeOp -> "_ge"
-  | EqOp -> "_eq"
-  | NeOp -> "_ne"
+  | LtOp -> "_less_than"
+  | LeOp -> "_less_equal"
+  | GtOp -> "_greater_than"
+  | GeOp -> "_greater_equal"
+  | EqOp -> "_equal"
+  | NeOp -> "_not_equal"
   | OrOp -> "_or"
   | AndOp -> "_and"
   | ConsOp -> "_cons"
@@ -41,12 +41,12 @@ let builtin_names =
     "_minus";
     "_times";
     "_divide";
-    "lt";
-    "_le";
-    "_gt";
-    "_ge";
-    "_eq";
-    "_ne";
+    "_less_than";
+    "_less_equal";
+    "_greater_than";
+    "_greater_equal";
+    "_equal";
+    "_not_equal";
     "_or";
     "_and";
     "_cons";
