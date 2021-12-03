@@ -15,4 +15,5 @@ void _init__builtins()
     _init__or();
     _init__and();
     _init__cons();
+    _init__seq();
 }
