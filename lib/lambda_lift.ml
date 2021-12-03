@@ -46,7 +46,12 @@ let add_formal (lambda : expr) (var : expr) =
 *)
 let rec lift (p : program) (ctx : expr list) = function
   | Lambda (ty, id, e) ->
-      let e', p' = lift p ctx e in
+      let rec get_id_typ = function
+        | TArrow(a,b) -> get_id_typ a
+        | ty -> ty
+      in
+      let id_typ = get_id_typ ty in
+      let e', p' = lift p (Var(id_typ, id) :: ctx) e in
       let l = Lambda (ty, id, e') in
       (* add closure as parameters to lambda *)
       let lambda_with_closure = List.fold_left add_formal l ctx in
