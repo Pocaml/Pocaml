@@ -100,6 +100,10 @@ _pml_func _builtin__cons;
 extern _pml_val _cons;
 _pml_init _init__cons;
 
+_pml_func _builtin__seq;
+extern _pml_val _seq;
+_pml_init _init__seq;
+
 extern _pml_init _init__builtins;
 
 #endif

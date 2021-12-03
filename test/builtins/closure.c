@@ -213,6 +213,21 @@ void test__cons()
 	free(b);
 }
 
+void test__seq()
+{
+	_pml_int *a = malloc(sizeof(_pml_int)),
+					 *b = malloc(sizeof(_pml_int));
+	_pml_val builtin_seq = _make_closure(_builtin__seq, 2);
+	_pml_val res;
+
+	*a = 0, *b = 9;
+	res = _apply_closure(builtin_seq, a); /* partial function application */
+	res = _apply_closure(res, b);
+	assert(*(_pml_int *)res == *b);
+	free(a);
+	free(b);
+}
+
 int main()
 {
 	test__add();
@@ -228,4 +243,5 @@ int main()
 	test__or();
 	test__and();
 	test__cons();
+	test__seq();
 }
