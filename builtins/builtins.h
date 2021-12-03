@@ -103,6 +103,6 @@ _pml_func _builtin__seq;
 extern _pml_val _seq;
 _pml_init _init__seq;
 
-extern _pml_init _init__builtins;
+_pml_init _init__builtins;
 
 #endif

@@ -6,8 +6,8 @@ build_dir="_pml_build"
 builtins_ar="pml_builtins.a"
 
 POCAML="dune exec -- bin/main.exe"
-LLI=/usr/local/opt/llvm@9/bin/lli
-LLC=/usr/local/opt/llvm@9/bin/llc
+LLI=lli
+LLC=llc
 CC=cc
 
 rm -rf $build_dir

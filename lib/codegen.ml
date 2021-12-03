@@ -254,9 +254,15 @@ let codegen (Program definitions) =
       let builder = L.builder_at_end context entry_block in
       match e with
       | Lambda _ ->
+          let argn =
+            let rec argn' = function
+              | Lambda (_, _, body) -> 1 + argn' body
+              | _ -> 0
+            in
+            argn' e
+          in
           let global = StringMap.find n toplevels in
           let topfunc = StringMap.find n topfuncs in
-          let argn = Array.length (L.param_types (L.type_of topfunc)) in
           let llval =
             L.build_call make_closure_f
               [| topfunc; L.const_int pml_int_t argn |]
