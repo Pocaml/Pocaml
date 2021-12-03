@@ -35,7 +35,7 @@ let%expect_test _ =
 
 let%expect_test _ =
   print_prog "let a = [1;2;3;]";
-  [%expect {| let a = ( ( ( ( ( :: : None ) ( 1 : None ) ) : None ) ( ( ( ( ( :: : None ) ( 2 : None ) ) : None ) ( ( ( ( ( :: : None ) ( 3 : None ) ) : None ) ( [] : None ) ) : None ) ) : None ) ) : None ) |}]
+  [%expect {| let a = ( ( ( ( ( _cons : None ) ( 1 : None ) ) : None ) ( ( ( ( ( _cons : None ) ( 2 : None ) ) : None ) ( ( ( ( ( _cons : None ) ( 3 : None ) ) : None ) ( [] : None ) ) : None ) ) : None ) ) : None ) |}]
 
 let%expect_test _ =
   print_prog "let a: () = ()";

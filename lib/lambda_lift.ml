@@ -11,20 +11,20 @@ let extract_defs = function Program defs -> defs
 
 (* creates an application of var to a lambda *)
 let apply_actual (e : expr) (var : expr) =
-  let l_type =
+  let typ_after_app =
     match typ_of_expr e with
-    | TArrow (t1, _) -> t1
+    | TArrow (_, t1) -> t1
     | ty ->
         error
           ("[ Lambda_lift.apply_actual ] apply " ^ string_of_expr var
          ^ " to expr (" ^ string_of_expr e
          ^ ") : expected type TArrow, but has " ^ string_of_typ ty)
   in
-  Apply (l_type, e, var)
+  Apply (typ_after_app, e, var)
 
-let rec add_formal_helper (formal : string) (formal_t : typ) = function
-  | Lambda (ty, id, body) ->
-      Lambda (TArrow (ty, formal_t), id, add_formal_helper formal formal_t body)
+let add_formal_helper (formal : string) (formal_t : typ) = function
+  | (Lambda (_, _, _)) as e ->
+      Lambda (TArrow(formal_t, typ_of_expr e), formal, e)
   | e -> Lambda (TArrow (formal_t, typ_of_expr e), formal, e)
 
 (* adds a formal parameter to a lambda to create a new lambda *)
@@ -44,7 +44,7 @@ let add_formal (lambda : expr) (var : expr) =
    function lift:
    bool -> Ir.program -> Ir.expr list -> Ir.expr -> (Ir.expr * Ir.program)
 
-   switch (bool)
+   switch (bool) determines if a lambda expression should be lifted
     - avoid lifing nested lambdas: we turn off switch when we recursivly
       lift lambda in expr inside a Lambda
     - avoid lifting top-level lambdas: turn off switch when we lift expr inside
@@ -69,7 +69,7 @@ let rec lift switch (p : program) (ctx : expr list) = function
           Var (typ_of_expr lambda_with_closure, lambda_name)
         in
         (* substitute original lambda with named function applied with params in closure *)
-        let new_expr = List.fold_left apply_actual lifted_lambda_var ctx in
+        let new_expr = List.fold_left apply_actual lifted_lambda_var (List.rev ctx) in
         (* update global definition *)
         let defs = match p' with Program ds -> ds in
         (new_expr, Program (lifted_lambda_def :: defs))
