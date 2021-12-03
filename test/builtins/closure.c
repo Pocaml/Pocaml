@@ -3,20 +3,11 @@
 #include <stdio.h>
 #include "../../builtins/builtins.h"
 
-
-<<<<<<< HEAD
 void test__add()
 {
 	_pml_int *a = malloc(sizeof(_pml_int)),
 			 *b = malloc(sizeof(_pml_int));
 	_pml_val builtin_add = _make_closure(_builtin__add, 2);
-=======
-int main()
-{
-	_pml_int *a = malloc(sizeof(_pml_int)),
-			 *b = malloc(sizeof(_pml_int));
-	_pml_val builtin_add = _make_closure(_builtin_add, 2);
->>>>>>> main
 	_pml_val res;
 
 	*a = 6, *b = 9;
@@ -26,7 +17,6 @@ int main()
 	assert(*(_pml_int *) res == *a + *b);
 	free(a);
 	free(b);
-<<<<<<< HEAD
 }
 
 void test__minus()
@@ -117,6 +107,4 @@ int main()
 	test__divide();
 	test__less_than();
 	test__less_equal();
-=======
->>>>>>> main
 }

@@ -16,7 +16,7 @@ _pml_val _builtin__add(_pml_val *args)
 	return (_pml_val) res;
 }
 
-void _init_add()
+void _init__add()
 {
 	_add = _make_closure(_builtin__add, 2);
 }

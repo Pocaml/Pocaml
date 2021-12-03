@@ -70,4 +70,6 @@ _pml_func	_builtin__less_equal;
 extern _pml_val _less_equal;
 _pml_init _init__less_equal;
 
+extern _pml_init _init__builtins;
+
 #endif
