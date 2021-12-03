@@ -1,6 +1,7 @@
 #include "builtins.h"
 
-void _init__builtins() {
+void _init__builtins()
+{
     _init__add();
     _init__minus();
     _init__times();
