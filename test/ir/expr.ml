@@ -10,11 +10,11 @@ let%expect_test "annotated variable" =
 
 let%expect_test "annotated expr with unary operator" =
   print_prog "let a = (not true : bool)";
-  [%expect {| let a = ( ( ( not : None ) ( true : None ) ) : bool ) |}]
+  [%expect {| let a = ( ( ( _not : None ) ( true : None ) ) : bool ) |}]
 
 let%expect_test "annotated expr with binary operator" =
   print_prog "let a = (3 + 5 : int)";
-  [%expect {| let a = ( ( ( ( ( + : None ) ( 3 : None ) ) : None ) ( 5 : None ) ) : int ) |}]
+  [%expect {| let a = ( ( ( ( ( _add : None ) ( 3 : None ) ) : None ) ( 5 : None ) ) : int ) |}]
 
 let%expect_test "annotated conditional expression" =
   print_prog "let a = (if true then 1 else 2 : int)";
@@ -32,7 +32,7 @@ let%expect_test "annotated let in expression" =
 let%expect_test "annotated lambda expression" =
   print_prog "let a = (fun (a: int) -> (a + 1 : int) : int -> int)";
   [%expect
-    {| let a = ( ( fun a -> ( ( ( ( ( + : None ) ( a : None ) ) : None ) ( 1 : None ) ) : int ) ) : int -> None ) |}]
+    {| let a = ( ( fun a -> ( ( ( ( ( _add : None ) ( a : None ) ) : None ) ( 1 : None ) ) : int ) ) : int -> None ) |}]
 
 let%expect_test "annotated function application" =
   print_prog "let a = (print (\"hello\" : string) : ())";
