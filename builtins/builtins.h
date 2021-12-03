@@ -9,7 +9,7 @@ typedef		int8_t		_pml_bool;
 typedef		int8_t		_pml_unit;
 typedef		int32_t		_pml_int;
 typedef		int8_t		*_pml_string;
-typedef		void		*_pml_val; 
+typedef		int8_t		*_pml_val; 
 typedef		_pml_val	_pml_func(_pml_val*);
 typedef struct _pml_list_node {
 	_pml_val data;

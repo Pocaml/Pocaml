@@ -1,0 +1,28 @@
+set -e
+
+fname=$1
+basename="${fname%.*}"
+build_dir="_pml_build"
+builtins_ar="pml_builtins.a"
+
+POCAML="dune exec -- bin/main.exe"
+LLI=/usr/local/opt/llvm@9/bin/lli
+LLC=/usr/local/opt/llvm@9/bin/llc
+CC=cc
+
+rm -rf $build_dir
+mkdir $build_dir
+
+$POCAML -c $fname > ${build_dir}/${basename}.ll
+
+cd builtins
+make  
+cp ${builtins_ar} ../${build_dir}
+cd ..
+
+cd ${build_dir}
+
+$LLC -relocation-model=pic ${basename}.ll > ${basename}.s
+$CC -o ${basename}.exe ${basename}.s ${builtins_ar}
+
+./${basename}.exe
