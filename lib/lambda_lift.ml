@@ -42,32 +42,46 @@ let add_formal (lambda : expr) (var : expr) =
 
 (*
    function lift:
-   Ir.program -> Ir.expr list -> Ir.expr -> (Ir.expr * Ir.program)
+   bool -> Ir.program -> Ir.expr list -> Ir.expr -> (Ir.expr * Ir.program)
+
+   switch (bool)
+    - avoid lifing nested lambdas: we turn off switch when we recursivly
+      lift lambda in expr inside a Lambda
+    - avoid lifting top-level lambdas: turn off switch when we lift expr inside
+      a top-level declaration
 *)
-let rec lift (p : program) (ctx : expr list) = function
+let rec lift switch (p : program) (ctx : expr list) = function
   | Lambda (ty, id, e) ->
-      let e', p' = lift p ctx e in
-      let l = Lambda (ty, id, e') in
-      (* add closure as parameters to lambda *)
-      let lambda_with_closure = List.fold_left add_formal l ctx in
-      let lambda_name = fresh_lambda_name () in
-      (* create a global definition *)
-      let lifted_lambda_def = Def (lambda_name, lambda_with_closure) in
-      let lifted_lambda_var =
-        Var (typ_of_expr lambda_with_closure, lambda_name)
+      let rec get_id_typ = function
+        | TArrow(a,b) -> get_id_typ a
+        | ty -> ty
       in
-      (* substitute original lambda with named function applied with params in closure *)
-      let new_expr = List.fold_left apply_actual lifted_lambda_var ctx in
-      (* update global definition *)
-      let defs = match p' with Program ds -> ds in
-      (new_expr, Program (lifted_lambda_def :: defs))
+      let id_typ = get_id_typ ty in
+      let e', p' = lift false p (Var(id_typ, id) :: ctx) e in
+      let l = Lambda (ty, id, e') in
+      if switch then
+        (* add closure as parameters to lambda *)
+        let lambda_with_closure = List.fold_left add_formal l ctx in
+        let lambda_name = fresh_lambda_name () in
+        (* create a global definition *)
+        let lifted_lambda_def = Def (lambda_name, lambda_with_closure) in
+        let lifted_lambda_var =
+          Var (typ_of_expr lambda_with_closure, lambda_name)
+        in
+        (* substitute original lambda with named function applied with params in closure *)
+        let new_expr = List.fold_left apply_actual lifted_lambda_var ctx in
+        (* update global definition *)
+        let defs = match p' with Program ds -> ds in
+        (new_expr, Program (lifted_lambda_def :: defs))
+      else
+        (l, p')
   | Letin (ty, id, e1, e2) ->
-      let e1', p1 = lift p ctx e1 in
-      let e2', p2 = lift p1 (Var (typ_of_expr e1, id) :: ctx) e2 in
+      let e1', p1 = lift true p ctx e1 in
+      let e2', p2 = lift true p1 (Var (typ_of_expr e1, id) :: ctx) e2 in
       (Letin (ty, id, e1', e2'), p2)
   | Apply (ty, e1, e2) ->
-      let e1', p1 = lift p ctx e1 in
-      let e2', p2 = lift p1 ctx e2 in
+      let e1', p1 = lift true p ctx e1 in
+      let e2', p2 = lift true p1 ctx e2 in
       (Apply (ty, e1', e2'), p2)
   | Match (ty, e1, cases) ->
     (*
@@ -86,10 +100,10 @@ let rec lift (p : program) (ctx : expr list) = function
           | PatConsEnd (ty, id) -> List.rev (Var (ty, id) :: ctx)
         in
         let ctx' = update_ctx ctx pat in
-        let e', p' = lift p ctx' e in
+        let e', p' = lift true p ctx' e in
         (p', ctx, (pat, e') :: lst)
       in
-      let e1', p' = lift p ctx e1 in
+      let e1', p' = lift true p ctx e1 in
       let p'', _, cases' =
         List.fold_left lift_lambda_in_case (p', ctx, []) cases
       in
@@ -103,7 +117,7 @@ let lambda_lift (p : program) =
   let defs = extract_defs p in
   let lift_def (p : program) (d : definition) =
     let id, e = match d with Def (id, e) -> (id, e) in
-    let e', p' = lift p [] e in
+    let e', p' = lift false p [] e in
     let defs = extract_defs p' in
     let new_def = Def (id, e') in
     (* defs are in reverse order *)
