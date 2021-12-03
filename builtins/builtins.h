@@ -70,6 +70,34 @@ _pml_func	_builtin__less_equal;
 extern _pml_val _less_equal;
 _pml_init _init__less_equal;
 
+_pml_func	_builtin__greater_than;
+extern _pml_val _greater_than;
+_pml_init _init__greater_than;
+
+_pml_func	_builtin__greater_equal;
+extern _pml_val _greater_equal;
+_pml_init _init__greater_equal;
+
+_pml_func	_builtin__equal;
+extern _pml_val _equal;
+_pml_init _init__equal;
+
+_pml_func	_builtin__not_equal;
+extern _pml_val _not_equal;
+_pml_init _init__not_equal;
+
+_pml_func	_builtin__or;
+extern _pml_val _or;
+_pml_init _init__or;
+
+_pml_func	_builtin__and;
+extern _pml_val _and;
+_pml_init _init__and;
+
+_pml_func	_builtin__cons;
+extern _pml_val _cons;
+_pml_init _init__cons;
+
 extern _pml_init _init__builtins;
 
 #endif
