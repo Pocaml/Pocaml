@@ -26,7 +26,7 @@ let codegen (Program definitions) =
   let pml_unit_t = L.i8_type context in
   let pml_int_t = L.i32_type context in
   let pml_string_t = L.pointer_type (L.i8_type context) in
-  let pml_val_t = L.pointer_type void_t in
+  let pml_val_t = L.pointer_type (L.i8_type context) in
   let pml_func_t = L.function_type pml_val_t [| L.pointer_type pml_val_t |] in
   let pml_init_t = L.function_type void_t [||] in
 

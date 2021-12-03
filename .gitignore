@@ -3,3 +3,4 @@ _opam/
 *.DS_Store
 .editorconfig
 .vscode
+_pml_build/
