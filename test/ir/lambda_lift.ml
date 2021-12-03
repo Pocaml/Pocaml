@@ -55,9 +55,13 @@ let%expect_test "lift lambdas in expr being patterned match on" =
     |  ( U1 : None ) -> ( 0 : None )
     ) : int ) |}]
 
-  let%expect_test "lifting nested lambdas" =
-    print_prog_ll "let f a b = a + b";
-    [%expect {|
-      let L9 = ( ( fun b -> ( ( fun a -> ( ( ( ( ( _add : None ) ( a : None ) ) : None ) ( b : None ) ) : None ) ) : None -> None ) ) : None -> None -> None )
-      let L10 = ( ( fun a -> ( ( ( L9 : None -> None -> None ) ( a : None ) ) : None -> None ) ) : None -> None -> None )
-      let f = ( L10 : None -> None -> None ) |}]
+let%expect_test "don't lift top level lambdas" =
+  print_prog_ll "let f a b = a + b";
+  [%expect {|
+    let f = ( ( fun a -> ( ( fun b -> ( ( ( ( ( _add : None ) ( a : None ) ) : None ) ( b : None ) ) : None ) ) : None -> None ) ) : None -> None -> None ) |}]
+  
+let%expect_test "don't lift immediately nested lambdas" =
+  print_prog_ll "let a = let a = 1 in fun b -> fun c -> a";
+  [%expect {|
+    let L9 = ( ( fun b -> ( ( fun c -> ( ( fun a -> ( a : None ) ) : None -> None ) ) : None -> None -> None ) ) : None -> None -> None )
+    let a = ( let ( a : None ) = ( 1 : None ) in ( ( ( L9 : None -> None -> None ) ( a : None ) ) : None -> None ) ) |}]
