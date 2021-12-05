@@ -121,7 +121,7 @@ let codegen (Program definitions) =
   (* This `lookup` is actually more complicated than just looking up the llvalue.
      Since LLVM globals are actually pointers to the values, we have to first load
      the globals into a local variable, and then use it accordingly. However,
-     the current hacky approach actually loads it everytime it is beging looked up,
+     the current hacky approach actually loads it everytime it is being looked up,
      so there could be multiple locals variables that point to the same global variable.
      It works, but we should probably think of something better. *)
   let lookup n builder env =
@@ -161,7 +161,20 @@ let codegen (Program definitions) =
             builder
         in
         (llval, builder)
-    | Match (t, e, arms) -> not_implemented ()
+    | Match (t, e, arms) -> 
+        let llval1, builder = build_expr f builder env e1 in
+        let pat_match = function
+          | (pat, e2) -> extract_pat pat 
+        and extract_pat = function 
+          | PatLit (t, lit) -> 
+          | PatCons (t, vid, vid) -> 
+          | PatConsEnd (t, vid) -> 
+          | PatDefault (t, vid) -> 
+        let matched = List.fliter pat_match arms in
+        let (_, em) = matched.hd in
+        build_expr f builder env em
+
+
   (* TODO *)
   and build_expr_lit builder = function
     | LitInt n ->

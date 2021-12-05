@@ -15,7 +15,7 @@ let rec char_list_of_string = function
       String.get s 0
       :: char_list_of_string (String.sub s 1 (String.length s - 1))
 
-let frseh_if_wild = function "_" -> fresh_name () | s -> s
+let fresh_if_wild = function "_" -> fresh_name () | s -> s
 
 let rec annotate t1 t2 =
   match (t1, t2) with
@@ -84,7 +84,7 @@ and lower_conditional ann cond e1 e2 =
 and lower_letin ann var_id e1 e2 =
   I.Letin
     ( ann I.TNone,
-      frseh_if_wild var_id,
+      fresh_if_wild var_id,
       lower_expr no_annotation e1,
       lower_expr no_annotation e2 )
 
@@ -102,7 +102,7 @@ and lower_lambda ann aparams aoutput_typ abody =
   | ParamAnn (avar_id, _) :: aps ->
       I.Lambda
         ( lambda_ityp,
-          frseh_if_wild avar_id,
+          fresh_if_wild avar_id,
           lower_lambda no_annotation aps aoutput_typ abody )
 
 and lower_match ann e arms =
@@ -125,14 +125,14 @@ and lower_pat =
     | A.LitUnit -> error "Can't lower pattern matching on unit"
   in
   function
-  | A.PatId avar_id -> I.PatDefault (I.TNone, frseh_if_wild avar_id)
+  | A.PatId avar_id -> I.PatDefault (I.TNone, fresh_if_wild avar_id)
   | A.PatLit lit -> I.PatLit (I.TNone, lower_literal lit)
   | A.PatCons (pat1, pat2) -> (
       match (pat1, pat2) with
       | A.PatId avar_id1, A.PatId avar_id2 ->
-          I.PatCons (I.TNone, frseh_if_wild avar_id1, frseh_if_wild avar_id2)
+          I.PatCons (I.TNone, fresh_if_wild avar_id1, fresh_if_wild avar_id2)
       | A.PatId avar_id1, A.PatLit (A.LitList []) ->
-          I.PatConsEnd (I.TNone, frseh_if_wild avar_id1)
+          I.PatConsEnd (I.TNone, fresh_if_wild avar_id1)
       | _ -> error "Can't lower recursive patterns yet")
 
 and lower_lit ann alit =
