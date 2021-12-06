@@ -6,6 +6,14 @@
   exception Error
 
   type token = Parser.token
+
+  let semi_stack = ref [SEQ]
+
+  let push_semi t = semi_stack := t :: !semi_stack
+
+  let pop_semi () = semi_stack := List.tl !semi_stack
+
+  let get_semi () = List.hd !semi_stack
 }
 
 let blanks = [' ' '\t' '\r' '\n']+
@@ -30,12 +38,12 @@ rule token = parse
 | '*' { TIMES }
 | '/' { DIVIDE }
 | "not" { NOT }
-| ";"  { SEMI }
+| ";"  { get_semi () }
 | "list" { LIST }
-| "["    { LEFT_BRAC }
-| "]"    { RIGHT_BRAC }
-| "("    { LEFT_PAREN }
-| ")"    { RIGHT_PAREN }
+| "["    { push_semi LSEP; LEFT_BRAC }
+| "]"    { pop_semi (); RIGHT_BRAC }
+| "("    { push_semi SEQ; LEFT_PAREN }
+| ")"    { pop_semi (); RIGHT_PAREN }
 | "if" { IF }
 | "then" { THEN }
 | "else" { ELSE }

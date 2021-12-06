@@ -6,7 +6,7 @@
 %token <char> LITCHAR
 %token <bool> LITBOOL
 %token <string> VARIABLE                                     
-%token SEMI LIST LEFT_BRAC RIGHT_BRAC                       
+%token LIST LEFT_BRAC RIGHT_BRAC
 %token NOT                                                   
 %token PLUS MINUS TIMES DIVIDE LT LE GT GE EQ NE OR AND CONS 
 %token IF THEN ELSE                                          
@@ -15,11 +15,13 @@
 %token MATCH WITH PIPE                                      
 %token ARROW
 %token LEFT_PAREN RIGHT_PAREN
-%token COLON                                                
+%token COLON
+%token SEQ LSEP
 
 %nonassoc LET IN FUN MATCH WITH ARROW
 %left PIPE
-%right SEMI
+%left SEQ
+%right LSEP
 %nonassoc IF THEN ELSE
 %right OR AND
 %left LT LE GT GE EQ NE
@@ -74,7 +76,7 @@ literal:
 list_literal:
   | /* nothing */           { [] }
   | expr                    { [$1] }
-  | expr SEMI list_literal  { $1 :: $3 }
+  | expr LSEP list_literal  { $1 :: $3 }
 
 apply:
     apply atom { Apply($1, $2) }
@@ -92,12 +94,21 @@ expr:
   | expr MINUS  expr { BinaryOp($1, MinusOp, $3) }
   | expr TIMES  expr { BinaryOp($1, TimesOp, $3) }
   | expr DIVIDE expr { BinaryOp($1, DivideOp, $3) }
+  | expr LT expr { BinaryOp($1, LtOp, $3) }
+  | expr LE expr { BinaryOp($1, LeOp, $3) }
+  | expr GT expr { BinaryOp($1, GtOp, $3) }
+  | expr GE expr { BinaryOp($1, GeOp, $3) }
+  | expr EQ expr { BinaryOp($1, EqOp, $3) }
+  | expr NE expr { BinaryOp($1, NeOp, $3) }
+  | expr OR expr { BinaryOp($1, OrOp, $3) }
+  | expr AND expr { BinaryOp($1, AndOp, $3) }
+  | expr CONS expr { BinaryOp($1, ConsOp, $3) }
+  | expr SEQ expr { BinaryOp($1, SeqOp, $3) }
   | IF expr THEN expr ELSE expr { Conditional($2, $4, $6) }
   | LET VARIABLE EQ expr IN expr { Letin($2, $4, $6) }
   | MATCH expr WITH match_arms { Match($2, $4) }
   | FUN params ARROW expr { Lambda($2, $4) }
   | apply { $1 }
-
 
 var:
   VARIABLE         { Var($1) }
