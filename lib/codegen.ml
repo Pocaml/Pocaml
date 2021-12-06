@@ -1,6 +1,7 @@
 module L = Llvm
 open Ir
 open Fresh
+open Print_ir
 module StringMap = Map.Make (String)
 
 exception CodegenError of string
@@ -162,20 +163,79 @@ let codegen (Program definitions) =
         in
         (llval, builder)
     | Match (t, e, arms) -> 
-        let llval1, builder = build_expr f builder env e1 in
-        let pat_match = function
-          | (pat, e2) -> extract_pat pat 
-        and extract_pat = function 
-          | PatLit (t, lit) -> 
-          | PatCons (t, vid, vid) -> 
-          | PatConsEnd (t, vid) -> 
+        let (hd, tl) = match e with
+          | Apply (t1, Apply (t2, _, hd), tl) -> (hd, tl)
+          | _ -> (e, e)
+        in
+        let rec pat_match extract_f  = function
+          | (pat, _) -> extract_f pat 
+        and extract_lit = function 
+          | PatLit (_, lit) -> compare_lit (lit, e)
+          | _ -> false
+        and extract_cons = function 
+          | PatCons (_, vid_hd, vid_tl) -> check_cons (hd, tl)
+          | _ -> false
+        and extract_cons_end = function 
+          | PatConsEnd (t, vid) -> check_cons_end (hd, tl)
+          | _ -> false
+        and extract_var = function 
+          | PatDefault (t, vid) -> true
+          | _ -> false
+        and lookup_val n = function
+          | Env (m, parent_env) -> (
+              try StringMap.find n m with Not_found -> lookup_val n parent_env)
+          | EnvNone -> error ("codegen: unbound variable " ^ n)
+        and compare_lit = function
+          (*| lit, Var (_, vid) -> compare_var (lit, (lookup_val vid env)) *)
+          | LitInt (x), Lit (_, LitInt (y))   -> x = y
+          | LitChar (x), Lit (_, LitChar (y)) -> x = y
+          | LitBool (x), Lit (_, LitBool (y)) -> x = y
+          | _, _ -> false
+        
+        and check_cons = function
+          | (hd, Apply (_, Apply (_, _, hd2), tl)) -> true
+          | _ -> false
+        and check_cons_end = function
+          | (hd, Lit (_, LitListEnd)) -> true
+          | _ -> false
+        in
+
+        let matched = List.filter (pat_match extract_lit) arms in
+        let matched = if (List.length matched) > 0 
+                      then matched 
+                      else List.filter (pat_match extract_cons) arms 
+        in
+        let matched = if (List.length matched) > 0 
+                      then matched 
+                      else List.filter (pat_match extract_cons_end) arms 
+        in
+        let matched = if (List.length matched) > 0 
+                      then matched 
+                      else List.filter (pat_match extract_var) arms 
+        in
+
+        let (pm, em) = match matched with 
+          | (pm, em) :: l -> (pm, em)
+          | _ -> error "codegen: pattern matching failed"
+        in 
+        let env = match pm with
+          | PatLit (_, lit) -> env
+          | PatCons (_, vid_hd, vid_tl) -> 
+              let llval_hd, builder = build_expr f builder env hd in
+              let llval_tl, builder = build_expr f builder env tl in
+              let env = add_var_to_scope vid_hd llval_hd env in 
+              add_var_to_scope vid_tl llval_tl env
+          | PatConsEnd (t, vid_hd) -> 
+              let llval_hd, builder = build_expr f builder env hd in
+              add_var_to_scope vid_hd llval_hd env
           | PatDefault (t, vid) -> 
-        let matched = List.fliter pat_match arms in
-        let (_, em) = matched.hd in
-        build_expr f builder env em
+              let llval1, builder = build_expr f builder env e in
+              add_var_to_scope vid llval1 env
+        in
+        let llval2, builder = build_expr f builder env em in
+        print_string (string_of_expr em);
+        (llval2, builder)
 
-
-  (* TODO *)
   and build_expr_lit builder = function
     | LitInt n ->
         let llval =
