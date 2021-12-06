@@ -41,9 +41,9 @@ let rec lower_program = function
 
 and lower_def = function
   | A.Def (avar, aparams, atyp, abody) ->
-      I.Def (avar, lower_lambda no_annotation aparams atyp abody)
+      I.Def (frseh_if_wild avar, lower_lambda no_annotation aparams atyp abody)
   | A.DefRecFn (avar, aparams, atyp, abody) ->
-      I.Def (avar, lower_lambda no_annotation aparams atyp abody)
+      I.Def (frseh_if_wild avar, lower_lambda no_annotation aparams atyp abody)
 
 and lower_expr ann = function
   | A.Lit lit -> lower_lit ann lit

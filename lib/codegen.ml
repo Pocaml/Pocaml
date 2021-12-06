@@ -288,8 +288,8 @@ let codegen (Program definitions) =
 
   (* Build calls in main for the top-evel init functions *)
   let () =
-    let build_call_init _ f = ignore (L.build_call f [||] "" main_builder) in
-    StringMap.iter build_call_init topinits
+    let build_call_init f = ignore (L.build_call f [||] "" main_builder) in
+    List.iter (fun (Def (n, _)) -> build_call_init (StringMap.find n topinits)) definitions
   in
 
   (* Terminate main with a return *)
