@@ -1,10 +1,24 @@
 #!/usr/bin/env bash
 
+# stop script when a command returns with non-zero
 set -e
+
+# important names
+fpath=""
+fname=""
+basename=""
+build_dir="_pml_build"
+builtins_ar="pml_builtins.a"
+stdlib_dir="stdlib"
+
+# get tools
+POCAML="dune exec -- bin/main.exe"
+LLC=llc
+CC=cc
 
 usage()
 {
-  printf "usage: pocamlc [-d] -f <path_to_pml_file>"
+  printf "usage: pocamlc [-c] [-d] [-r] [-h] [-f <path_to_pml_file>]"
   printf
   printf "options:"
   printf "-c	Clean C object files from previous build before rebuild."
@@ -13,15 +27,11 @@ usage()
   printf "-h	Display pocamlc usage."
 }
 
-
 CLEAN_PREV_BUILD=false
 RUN_AFTER_COMPILATION=false
 POCAMLC_FLAGS=""
-fpath=""
-fname=""
-basename=""
 
-[[ $@ ]] || { usage; exit 1; }
+[[ $* ]] || { usage; exit 1; }
 
 # parse options and argument
 while getopts 'cdrf:h' opt; do
@@ -37,38 +47,33 @@ while getopts 'cdrf:h' opt; do
   esac
 done
 
-
-# important names
-build_dir="_pml_build"
-builtins_ar="pml_builtins.a"
-prelude_dir="prelude"
-
-
-# get tools
-POCAML="dune exec -- bin/main.exe"
-LLI=lli
-LLC=llc
-CC=cc
-
-
 # create build_dir
 rm -rf $build_dir
 mkdir $build_dir
 
-# copy source file to build_dir
-cp ${fpath} ${build_dir}/${fname}.orig
+# if '-f' specified, copy source file to build_dir
+# else, get input from stdin
+if [[ $fpath ]]; then
+  cp ${fpath} ${build_dir}/${fname}.orig
+else
+  fname="a.pml"
+  fpath=${build_dir}/${fname}
+  basename="${fname%.*}"
+  cat > $fpath.orig
+fi
 
-# prepend prelude
-fname_with_prelude=${build_dir}/${fname}
-touch $fname_with_prelude
-for prelude_file in ${prelude_dir}/**; do
-    printf "(* pocamlc: ${prelude_file} *)\n" >> $fname_with_prelude
-    cat $prelude_file >> $fname_with_prelude
-    printf "\n" >> $fname_with_prelude
+# prepend stdlib
+fname_with_stdlib=${build_dir}/${fname}
+touch $fname_with_stdlib
+for stdlib_file in ${stdlib_dir}/**; do
+  { printf "(* pocamlc: %s *)\n" $stdlib_file;
+    cat $stdlib_file;
+    printf "\n" >> $fname_with_stdlib;
+  } >> $fname_with_stdlib
 done
-printf "(* pocamlc: ${fname} *)\n" >> $fname_with_prelude
-cat ${build_dir}/${fname}.orig >> $fname_with_prelude
-
+{ printf "(* pocamlc: %s *)\n" $fname;
+  cat ${build_dir}/${fname}.orig
+} >> $fname_with_stdlib
 
 # pocaml -> llvm
 $POCAML -c ${build_dir}/${fname} > ${build_dir}/${basename}.ll
@@ -85,8 +90,8 @@ cd ${build_dir}
 $LLC -relocation-model=pic ${basename}.ll > ${basename}.s
 $CC -o ${basename}.exe ${basename}.s ${builtins_ar}
 
-# execute
+# if '-r' specified, execute
 [ "$RUN_AFTER_COMPILATION" = true ] && ./${basename}.exe
 
-# exit
+# exit successfully
 exit 0
