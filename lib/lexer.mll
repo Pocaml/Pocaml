@@ -69,7 +69,7 @@ rule token = parse
 | "false" { LITBOOL(false) }
 | integer_literal+ as lit { LITINT(int_of_string lit) }
 | '"' (string_literal+ as lit) '"'  { LITSTRING(lit) }
-| '\''(char_literal as lit)'\'' { LITCHAR(lit) }  (* excape sequence not supported *)
+| '\''(char_literal as lit)'\'' { LITCHAR(lit) }
 | lowercase_ident as var { VARIABLE(var) }
 | eof { EOF }
 
