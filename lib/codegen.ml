@@ -95,7 +95,7 @@ let codegen (Program definitions) =
       let f = L.declare_global pml_val_t n the_module in
       StringMap.add n f m
     in
-    List.fold_left builtin StringMap.empty Print.builtin_names
+    List.fold_left builtin StringMap.empty Builtins.builtin_names
   in
 
   let builtins_env : env = Env (builtins, EnvNone) in
