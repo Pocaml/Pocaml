@@ -1,35 +1,41 @@
+#!/usr/bin/env bash
+
 set -e
 
 usage()
 {
-  echo "usage: pocamlc [-d] -f <path_to_pml_file>"
-  echo
-  echo "options:"
-  echo "-c	Clean C object files from previous build before rebuild."
-  echo "-d	Compile Pocaml C builtins with debugging information."
-  echo "-h	Display pocamlc usage."
+  printf "usage: pocamlc [-d] -f <path_to_pml_file>"
+  printf
+  printf "options:"
+  printf "-c	Clean C object files from previous build before rebuild."
+  printf "-d	Compile Pocaml C builtins with debugging information."
+  printf "-r	Run the executable after compilation."
+  printf "-h	Display pocamlc usage."
 }
 
 
 CLEAN_PREV_BUILD=false
+RUN_AFTER_COMPILATION=false
 POCAMLC_FLAGS=""
+fpath=""
 fname=""
 basename=""
 
 [[ $@ ]] || { usage; exit 1; }
 
 # parse options and argument
-while getopts 'cdf:h' opt; do
+while getopts 'cdrf:h' opt; do
   case $opt in
     c) CLEAN_PREV_BUILD=true;;
     d) POCAMLC_FLAGS+=" -D BUILTIN_DEBUG" ;;
-    f) fname=$OPTARG;
+    r) RUN_AFTER_COMPILATION=true;;
+    f) fpath=$OPTARG;
+       fname=${fpath##*/}
        basename="${fname%.*}" ;;
     h | *) usage
        exit ;;
   esac
 done
-
 
 
 # important names
@@ -50,17 +56,17 @@ rm -rf $build_dir
 mkdir $build_dir
 
 # copy source file to build_dir
-cp ${fname} ${build_dir}/${fname}.orig
+cp ${fpath} ${build_dir}/${fname}.orig
 
 # prepend prelude
 fname_with_prelude=${build_dir}/${fname}
 touch $fname_with_prelude
 for prelude_file in ${prelude_dir}/**; do
-    echo "(* pocamlc: ${prelude_file} *)\n" >> $fname_with_prelude
+    printf "(* pocamlc: ${prelude_file} *)\n" >> $fname_with_prelude
     cat $prelude_file >> $fname_with_prelude
-    echo "\n" >> $fname_with_prelude
+    printf "\n" >> $fname_with_prelude
 done
-echo "(* pocamlc: ${fname} *)\n" >> $fname_with_prelude
+printf "(* pocamlc: ${fname} *)\n" >> $fname_with_prelude
 cat ${build_dir}/${fname}.orig >> $fname_with_prelude
 
 
@@ -80,4 +86,7 @@ $LLC -relocation-model=pic ${basename}.ll > ${basename}.s
 $CC -o ${basename}.exe ${basename}.s ${builtins_ar}
 
 # execute
-./${basename}.exe
+[ "$RUN_AFTER_COMPILATION" = true ] && ./${basename}.exe
+
+# exit
+exit 0
