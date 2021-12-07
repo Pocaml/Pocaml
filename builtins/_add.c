@@ -15,7 +15,6 @@ _pml_val _builtin__add(_pml_val *args)
 
 	*res = *left_operand + *right_operand;
 
-	printf("%d + %d = %d\n", *left_operand, *right_operand, *res);
 	return (_pml_val) res;
 }
 
