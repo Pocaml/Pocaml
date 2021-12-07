@@ -194,7 +194,9 @@ let codegen (Program definitions) =
     | LitUnit ->
         let llval = L.build_call make_unit_f [||] (fresh_name ()) builder in
         (llval, builder)
-    | LitListEnd -> (pml_empty_list, builder)
+    | LitListEnd ->
+        let llval = L.build_load pml_empty_list "pml_empty_list" builder in
+        (llval, builder)
   in
 
   (* Define top-level lambda's; keep a dictionary (key: top-level name, value: lambda's function definition)*)
