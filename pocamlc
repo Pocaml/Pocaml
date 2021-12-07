@@ -28,14 +28,16 @@ cat ${prelude_dir}/** ${build_dir}/${fname}.orig > ${build_dir}/${fname}
 # pocaml -> llvm
 $POCAML -c ${build_dir}/${fname} > ${build_dir}/${basename}.ll
 
+# build builtins C static library
 cd builtins
 make  
 cp ${builtins_ar} ../${build_dir}
 cd ..
 
+# link the generated llvm with builtin
 cd ${build_dir}
-
 $LLC -relocation-model=pic ${basename}.ll > ${basename}.s
 $CC -o ${basename}.exe ${basename}.s ${builtins_ar}
 
+# execute
 ./${basename}.exe
