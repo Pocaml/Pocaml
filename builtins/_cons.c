@@ -14,7 +14,7 @@ _pml_val _builtin__cons(_pml_val *args)
   node->data = left_operand;
   node->next = right_operand;
 
-  return node;
+  return (_pml_val) node;
 }
 
 void _init__cons()

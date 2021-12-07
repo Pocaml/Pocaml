@@ -14,46 +14,70 @@ usage()
 CLEAN_PREV_BUILD=false
 POCAMLC_FLAGS=""
 fname=""
-
+basename=""
 
 [[ $@ ]] || { usage; exit 1; }
+
+# parse options and argument
 while getopts 'cdf:h' opt; do
   case $opt in
     c) CLEAN_PREV_BUILD=true;;
     d) POCAMLC_FLAGS+=" -D BUILTIN_DEBUG" ;;
-    f) fname=$OPTARG ;;
+    f) fname=$OPTARG;
+       basename="${fname%.*}" ;;
     h | *) usage
        exit ;;
   esac
 done
 
 
-basename="${fname%.*}"
+
+# important names
 build_dir="_pml_build"
 builtins_ar="pml_builtins.a"
+prelude_dir="prelude"
 
 
+# get tools
 POCAML="dune exec -- bin/main.exe"
 LLI=lli
 LLC=llc
 CC=cc
 
 
+# create build_dir
 rm -rf $build_dir
 mkdir $build_dir
 
-$POCAML -c $fname > ${build_dir}/${basename}.ll
+# copy source file to build_dir
+cp $1 ${build_dir}/${fname}.orig
+
+# prepend prelude
+fname_with_prelude=${build_dir}/${fname}
+touch $fname_with_prelude
+for prelude_file in ${prelude_dir}/**; do
+    echo "(* pocamlc: ${prelude_file} *)\n" >> $fname_with_prelude
+    cat $prelude_file >> $fname_with_prelude
+    echo "\n" >> $fname_with_prelude
+done
+echo "(* pocamlc: ${fname} *)\n" >> $fname_with_prelude
+cat ${build_dir}/${fname}.orig >> $fname_with_prelude
 
 
+# pocaml -> llvm
+$POCAML -c ${build_dir}/${fname} > ${build_dir}/${basename}.ll
+
+# build builtins C static library
 cd builtins
 [ "$CLEAN_PREV_BUILD" = true ] && make clean
 make PML_CFLAGS="${POCAMLC_FLAGS}"
 cp ${builtins_ar} ../${build_dir}
 cd ..
 
+# link the generated llvm with builtin
 cd ${build_dir}
-
 $LLC -relocation-model=pic ${basename}.ll > ${basename}.s
 $CC -o ${basename}.exe ${basename}.s ${builtins_ar}
 
+# execute
 ./${basename}.exe

@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 /* pocaml primitives */
-typedef		char		_pml_char;
+typedef		char      _pml_char;
 typedef		int8_t		_pml_bool;
 typedef		int8_t		_pml_unit;
 typedef		int32_t		_pml_int;
@@ -43,6 +43,14 @@ typedef struct _pml_closure_md
 _pml_val _make_closure(_pml_func *fp, _pml_int num_args);
 _pml_val _apply_closure(_pml_val closure, _pml_val arg);
 
+/* primitives */
+_pml_val _make_int(_pml_int n);
+_pml_val _make_bool(_pml_bool b);
+_pml_val _make_char(_pml_char c);
+_pml_val _make_string(_pml_char *s);
+_pml_val _make_int(_pml_int n);
+_pml_val _make_unit();
+_pml_val _make_list(_pml_val data, _pml_val next_list);
 /* pml func helpers */
 _pml_val _get_arg(_pml_val *params, _pml_int i);
 
@@ -106,6 +114,10 @@ _pml_init _init__seq;
 _pml_func _builtin_string_of_int;
 extern _pml_val string_of_int;
 _pml_init _init_string_of_int;
+
+_pml_func _builtin_print_string;
+extern _pml_val print_string;
+_pml_init _init_print_string;
 
 _pml_init _init__builtins;
 

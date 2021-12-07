@@ -15,5 +15,6 @@ let builtin_names =
     "_and";
     "_cons";
     "_seq";
-    "string_of_int"
+    "string_of_int";
+    "print_string"
   ]

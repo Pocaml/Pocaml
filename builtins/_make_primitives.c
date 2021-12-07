@@ -21,7 +21,8 @@ _pml_val _make_char(_pml_char c) {
 }
 
 _pml_val _make_string(_pml_char *s) {
-    _pml_char *p = malloc(strlen(s));
+    size_t n = strlen((char *) s) + 1;
+    _pml_char *p = malloc(sizeof(_pml_char) * n);
     strcpy(p, s);
     return (_pml_val) p;
 }
@@ -33,7 +34,7 @@ _pml_val _make_unit() {
 }
 
 _pml_list _empty_list = { NULL };
-_pml_val _pml_empty_list = &_empty_list;
+_pml_val _pml_empty_list = (_pml_val) &_empty_list;
 
 _pml_val _make_list(_pml_val data, _pml_val next_list) {
     _pml_list_node *next_list_node = ((_pml_list *)next_list)->head;
@@ -42,5 +43,5 @@ _pml_val _make_list(_pml_val data, _pml_val next_list) {
     node->next = next_list_node;
     _pml_list *list = malloc(sizeof(_pml_list));
     list->head = node;
-    return list;
+    return (_pml_val) list;
 }

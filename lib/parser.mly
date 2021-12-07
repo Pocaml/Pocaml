@@ -1,9 +1,18 @@
-%{ open Ast %}
+%{
+    open Ast
+
+    let unescape s =
+      Scanf.sscanf ("\"" ^ s ^ "\"") "%S%!" (fun u -> u)
+
+    let unescape_char s =
+      let unescaped_s = unescape s in
+      String.get unescaped_s 0
+%}
 
 %token EOF
 %token <int> LITINT
 %token <string> LITSTRING
-%token <char> LITCHAR
+%token <string> LITCHAR
 %token <bool> LITBOOL
 %token <string> VARIABLE                                     
 %token LIST LEFT_BRAC RIGHT_BRAC
@@ -69,8 +78,8 @@ literal:
   | LEFT_BRAC list_literal RIGHT_BRAC   { LitList($2) }
   | LITINT                              { LitInt($1) }
   | LITBOOL                             { LitBool($1) }
-  | LITSTRING                           { LitString($1) }
-  | LITCHAR                             { LitChar($1) }
+  | LITSTRING                           { LitString(unescape($1)) }
+  | LITCHAR                             { LitChar(unescape_char($1)) }
   | LEFT_PAREN RIGHT_PAREN              { LitUnit }
 
 list_literal:
