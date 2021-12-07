@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "builtins.h"
 
 
@@ -13,6 +14,8 @@ _pml_val _builtin__add(_pml_val *args)
 	right_operand = (_pml_int *) args[1];
 
 	*res = *left_operand + *right_operand;
+
+	printf("%d + %d = %d\n", *left_operand, *right_operand, *res);
 	return (_pml_val) res;
 }
 
