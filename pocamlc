@@ -1,19 +1,32 @@
 set -e
 
-fname=$1
+# parse argument
+fname=${1##*/}
 basename="${fname%.*}"
+
+# important names
 build_dir="_pml_build"
 builtins_ar="pml_builtins.a"
+prelude_dir="prelude"
 
+# get tools
 POCAML="dune exec -- bin/main.exe"
 LLI=lli
 LLC=llc
 CC=cc
 
+# create build_dir
 rm -rf $build_dir
 mkdir $build_dir
 
-$POCAML -c $fname > ${build_dir}/${basename}.ll
+# copy source file to build_dir
+cp $1 ${build_dir}/${fname}.orig
+
+# prepend prelude
+cat ${prelude_dir}/** ${build_dir}/${fname}.orig > ${build_dir}/${fname}
+
+# pocaml -> llvm
+$POCAML -c ${build_dir}/${fname} > ${build_dir}/${basename}.ll
 
 cd builtins
 make  
