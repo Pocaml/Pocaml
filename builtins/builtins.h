@@ -9,7 +9,7 @@ typedef		int8_t		_pml_bool;
 typedef		int8_t		_pml_unit;
 typedef		int32_t		_pml_int;
 typedef		int8_t		*_pml_string;
-typedef		int8_t		*_pml_val; 
+typedef		int8_t		*_pml_val;
 typedef		_pml_val	_pml_func(_pml_val*);
 typedef struct _pml_list_node {
 	_pml_val data;
@@ -102,6 +102,10 @@ _pml_init _init__cons;
 _pml_func _builtin__seq;
 extern _pml_val _seq;
 _pml_init _init__seq;
+
+_pml_func _builtin_string_of_int;
+extern _pml_val string_of_int;
+_pml_init _init_string_of_int;
 
 _pml_init _init__builtins;
 

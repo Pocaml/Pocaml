@@ -19,7 +19,8 @@ OBJ=_add.o \
  _not_equal.o \
  _or.o \
  _seq.o \
- _times.o
+ _times.o \
+string_of_int.o
 
 .PHONY: default
 default: pml_builtins.a

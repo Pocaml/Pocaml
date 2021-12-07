@@ -16,4 +16,5 @@ void _init__builtins()
     _init__and();
     _init__cons();
     _init__seq();
+    _init_string_of_int();
 }
