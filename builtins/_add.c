@@ -15,6 +15,10 @@ _pml_val _builtin__add(_pml_val *args)
 
 	*res = *left_operand + *right_operand;
 
+#ifdef BUILTIN_DEBUG
+	printf("[debug] %d + %d = %d\n", *left_operand, *right_operand, *res);
+#endif
+
 	return (_pml_val) res;
 }
 

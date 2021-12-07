@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-I.
+CFLAGS=-I. $(PML_CFLAGS)
 DEPS=buildins.h
 OBJ=_add.o \
  _and.o \
@@ -20,6 +20,7 @@ OBJ=_add.o \
  _or.o \
  _seq.o \
  _times.o \
+ string_of_int.o \
  print_string.o
 
 .PHONY: default
