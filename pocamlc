@@ -1,22 +1,53 @@
 set -e
 
-fname=$1
+usage()
+{
+  echo "usage: pocamlc [-d] -f <path_to_pml_file>"
+  echo
+  echo "options:"
+  echo "-c	Clean C object files from previous build before rebuild."
+  echo "-d	Compile Pocaml C builtins with debugging information."
+  echo "-h	Display pocamlc usage."
+}
+
+
+CLEAN_PREV_BUILD=false
+POCAMLC_FLAGS=""
+fname=""
+
+
+[[ $@ ]] || { usage; exit 1; }
+while getopts 'cdf:h' opt; do
+  case $opt in
+    c) CLEAN_PREV_BUILD=true;;
+    d) POCAMLC_FLAGS+=" -D BUILTIN_DEBUG" ;;
+    f) fname=$OPTARG ;;
+    h | *) usage
+       exit ;;
+  esac
+done
+
+
 basename="${fname%.*}"
 build_dir="_pml_build"
 builtins_ar="pml_builtins.a"
+
 
 POCAML="dune exec -- bin/main.exe"
 LLI=lli
 LLC=llc
 CC=cc
 
+
 rm -rf $build_dir
 mkdir $build_dir
 
 $POCAML -c $fname > ${build_dir}/${basename}.ll
 
+
 cd builtins
-make  
+[ "$CLEAN_PREV_BUILD" = true ] && make clean
+make PML_CFLAGS="${POCAMLC_FLAGS}"
 cp ${builtins_ar} ../${build_dir}
 cd ..
 

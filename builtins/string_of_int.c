@@ -18,7 +18,10 @@ _pml_val _builtin_string_of_int(_pml_val *args)
 	int_val = (_pml_int *) args[0];
 	sprintf(res, "%d", *int_val);
 
+#ifdef BUILTIN_DEBUG
 	printf("[debug] string_of_int %d -> %s\n", *int_val, res);
+#endif
+
 	return (_pml_val) res;
 }
 

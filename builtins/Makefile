@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-I.
+CFLAGS=-I. $(PML_CFLAGS)
 DEPS=buildins.h
 OBJ=_add.o \
  _and.o \
