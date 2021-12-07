@@ -5,7 +5,7 @@
 
 
 #define	INT_MAX_CHAR_NUM    10
-#define INT_STR_MAX_SIZE    (sizeof(char) * INT_MAX_CHAR_NUM)
+#define INT_STR_MAX_SIZE    (sizeof(_pml_char) * INT_MAX_CHAR_NUM)
 
 
 _pml_val string_of_int;
