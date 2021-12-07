@@ -50,7 +50,7 @@ rm -rf $build_dir
 mkdir $build_dir
 
 # copy source file to build_dir
-cp $1 ${build_dir}/${fname}.orig
+cp ${fname} ${build_dir}/${fname}.orig
 
 # prepend prelude
 fname_with_prelude=${build_dir}/${fname}
