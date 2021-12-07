@@ -25,7 +25,7 @@ let string_literal = (letter | digit | '_' | '\'' | ' ')
 let id_literal = (letter | digit | '_' | '\'')
 (* TODO: fix var_id regex: support 'a *)
 let capitalized_ident = uppercase id_literal*
-let lowercase_ident = (lowercase | '_') id_literal*
+let lowercase_ident = (lowercase) id_literal*
 let integer_literal = ['-']? digit (digit | '_')*
 let regular_char = [^ '\'' '\\'] 
 let variable_id = lowercase (lowercase | uppercase)*
