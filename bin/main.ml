@@ -36,8 +36,7 @@ let () =
   | _ -> (
       let m =
         program |> Lower_ast.lower_program |> Type_infer.type_infer
-        |> Lambda_lift.lambda_lift |> Defunctionalize.defunctionalize
-        |> Monomorphize.monomorphize |> Codegen.codegen
+        |> Lambda_lift.lambda_lift |> Codegen.codegen
       in
       match !action with
       | Ast -> ()
