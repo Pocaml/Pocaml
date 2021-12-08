@@ -15,6 +15,7 @@ stdlib_dir="stdlib"
 POCAML="dune exec -- bin/main.exe"
 LLC=llc
 CC=cc
+OCAMLC=ocamlc
 
 usage()
 {
@@ -25,6 +26,7 @@ usage()
   echo "-c	Clean C object files from previous build before rebuild."
   echo "-d	Compile Pocaml C builtins with debugging information."
   echo "-r	Run the executable after compilation."
+  echo "-t	Typecheck with ocamlc."
   echo "-x	Clean and remove all build artifacts."
   echo "-h	Display pocamlc usage."
   echo
@@ -32,16 +34,18 @@ usage()
 
 CLEAN_PREV_BUILD=false
 RUN_AFTER_COMPILATION=false
+TYPECHECK=false
 POCAMLC_FLAGS=""
 
 [[ $* ]] || { usage; exit 1; }
 
 # parse options and argument
-while getopts 'cdrxf:h' opt; do
+while getopts 'cdrtxf:h' opt; do
   case $opt in
     c) CLEAN_PREV_BUILD=true;;
     d) POCAMLC_FLAGS+=" -D BUILTIN_DEBUG";;
     r) RUN_AFTER_COMPILATION=true;;
+    t) TYPECHECK=true;;
     f) fpath=$OPTARG
        fname=${fpath##*/}
        basename="${fname%.*}";;
@@ -84,8 +88,23 @@ done
   cat ${build_dir}/${fname}.orig
 } >> $fname_with_stdlib
 
+
+# typecheck with ocamlc
+if [ $TYPECHECK = true ]; then
+  cp builtins/builtins.ml ${build_dir}/
+  cd $build_dir
+  {
+    cat builtins.ml
+    printf "\n"
+    cat $fname
+  } > ${basename}.ml
+  $OCAMLC -i ${basename}.ml
+  rm -f builtins.ml ${basename}.ml
+  cd ..
+fi
+
 # pocaml -> llvm
-$POCAML -c ${build_dir}/${fname} > ${build_dir}/${basename}.ll
+$POCAML -c ${build_dir}/${fname}> ${build_dir}/${basename}.ll
 
 # build builtins C static library
 cd builtins
