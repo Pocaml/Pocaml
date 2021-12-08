@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/bin/bash
 
 docker_tag=pocaml/pocaml
 docker_work_dir=/home/pocaml
