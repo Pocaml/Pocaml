@@ -52,6 +52,7 @@ rule token = parse
 | "let" { LET }
 | "in"  { IN }
 | "fun" { FUN }
+| "function" { FUNCTION }
 | "rec"   { REC }
 | "match" { MATCH }
 | "with"  { WITH }

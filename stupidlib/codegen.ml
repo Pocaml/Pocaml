@@ -85,6 +85,3 @@ let codegen () =
     L.build_ret (L.const_int i32_t 69) builder
   in
   the_module
-
-  match a with 
-  | 
