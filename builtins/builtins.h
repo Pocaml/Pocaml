@@ -127,6 +127,14 @@ _pml_func _builtin_string_of_int;
 extern _pml_val string_of_int;
 _pml_init _init_string_of_int;
 
+_pml_func _builtin_string_of_char;
+extern _pml_val string_of_char;
+_pml_init _init_string_of_char;
+
+_pml_func _builtin_string_of_bool;
+extern _pml_val string_of_bool;
+_pml_init _init_string_of_bool;
+
 _pml_func _builtin_print_string;
 extern _pml_val print_string;
 _pml_init _init_print_string;

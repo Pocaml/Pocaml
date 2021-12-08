@@ -3,6 +3,8 @@ let print_endline s =
   print_string "\n"
 
 let print_int n = print_string (string_of_int n)
+let print_bool b = print_string (string_of_bool b)
+let print_char c = print_string (string_of_char c)
 
 let rec list_length = function [] -> 0 | _ :: xs -> 1 + list_length xs
 

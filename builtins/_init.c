@@ -17,5 +17,7 @@ void _init__builtins()
     _init__cons();
     _init__seq();
     _init_string_of_int();
+    _init_string_of_char();
+    _init_string_of_bool();
     _init_print_string();
 }
