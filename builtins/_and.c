@@ -5,11 +5,11 @@ _pml_val _and;
 
 _pml_val _builtin__and(_pml_val *args)
 {
-	_pml_int *left_operand, *right_operand;
-	_pml_int *res = (_pml_int *)malloc(sizeof(_pml_int));
+	_pml_bool *left_operand, *right_operand;
+	_pml_bool *res = (_pml_bool *)malloc(sizeof(_pml_bool));
 
-	left_operand = (_pml_int *)args[0];
-	right_operand = (_pml_int *)args[1];
+	left_operand = (_pml_bool *)args[0];
+	right_operand = (_pml_bool *)args[1];
 
 	*res = *left_operand && *right_operand;
 	return (_pml_val)res;

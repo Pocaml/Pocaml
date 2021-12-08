@@ -1,20 +1,22 @@
 CC=gcc
 CFLAGS=-I. $(PML_CFLAGS)
 DEPS=buildins.h
-OBJ=_add.o \
- _and.o \
+OBJ= _init.o \
  _apply_closure.o \
+ _get_arg.o \
+ _make_closure.o \
+ _make_primitives.o \
+ _pattern_match.o \
+ _error.o \
+ _add.o \
+ _and.o \
  _cons.o \
  _divide.o \
  _equal.o \
- _get_arg.o \
  _greater_equal.o \
  _greater_than.o \
- _init.o \
  _less_equal.o \
  _less_than.o \
- _make_closure.o \
- _make_primitives.o \
  _minus.o \
  _not_equal.o \
  _or.o \
@@ -34,4 +36,4 @@ pml_builtins.a: $(OBJ)
 
 .PHONY: clean
 clean:
-	rm *.o pml_builtins.a
+	rm -f *.o pml_builtins.a

@@ -127,6 +127,10 @@ match_arms:
   | PIPE pat ARROW expr match_arms { ($2, $4) :: $5 }
 
 pat:
+  | pat_                           { $1 }
+  | LEFT_PAREN pat_ RIGHT_PAREN    { $2 }
+
+pat_:
     VARIABLE  { PatId($1) }
   | literal   { PatLit($1) }
   | pat CONS pat  { PatCons($1, $3) }
