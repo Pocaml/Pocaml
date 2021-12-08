@@ -21,4 +21,4 @@ let lsts = [
   [2;1]
 ]
 
-let _ = map (fun lst -> print_endline (test_pattern_matching lst)) lsts
+let _ = list_map (fun lst -> print_endline (test_pattern_matching lst)) lsts

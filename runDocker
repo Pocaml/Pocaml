@@ -1,0 +1,9 @@
+#!/bin/env bash
+
+docker_tag=pocaml/pocaml
+docker_work_dir=/home/pocaml
+
+docker_cmd_override=$*
+
+docker build -t $docker_tag .
+docker run -it -v "$(pwd)":"$docker_work_dir" -w="$docker_work_dir" $docker_tag $docker_cmd_override
