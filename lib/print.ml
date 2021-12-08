@@ -51,6 +51,8 @@ let rec string_of_expr = function
       ^ " )"
   | Lambda (params, e) ->
       "( fun " ^ string_of_params params ^ " = " ^ string_of_expr e ^ " )"
+  | Function arms ->
+      "(\n function " ^ string_of_match_arms arms ^ "\n)"
   | Apply (e1, e2) -> "( " ^ string_of_expr e1 ^ " " ^ string_of_expr e2 ^ " )"
   | Match (e, lst) ->
       "(\n match " ^ string_of_expr e ^ " with\n" ^ string_of_match_arms lst

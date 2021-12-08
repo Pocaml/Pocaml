@@ -16,5 +16,7 @@ let builtin_names =
     "_cons";
     "_seq";
     "string_of_int";
+    "string_of_bool";
+    "string_of_char";
     "print_string"
   ]

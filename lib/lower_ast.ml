@@ -53,9 +53,18 @@ and lower_expr ann = function
   | A.Conditional (cond, e1, e2) -> lower_conditional ann cond e1 e2
   | A.Letin (avar_id, e1, e2) -> lower_letin ann avar_id e1 e2
   | A.Lambda (ps, e) -> lower_lambda ann ps A.TNone e
+  | A.Function arms -> lower_function ann arms
   | A.Apply (e1, e2) -> lower_apply ann e1 e2
   | A.Match (e, arms) -> lower_match ann e arms
   | A.Annotation (e, t) -> lower_expr (annotate (ann (lower_typ t))) e
+
+and lower_function ann arms =
+  let n = fresh_name () in
+  let match' = lower_match no_annotation (A.Var n) arms in
+  I.Lambda
+    ( ann I.TNone,
+      n,
+      match')
 
 and lower_unary_op ann aop e =
   I.Apply
@@ -121,8 +130,8 @@ and lower_pat =
     | A.LitBool b -> I.LitBool b
     | A.LitList [] -> I.LitListEnd
     | A.LitList _ -> error "Can't lower pattern matching on non-emtpy list"
-    | A.LitString _ -> error "Can't lower pattern matching on string"
-    | A.LitUnit -> error "Can't lower pattern matching on unit"
+    | A.LitString s -> I.LitString s
+    | A.LitUnit -> I.LitUnit
   in
   function
   | A.PatId avar_id -> I.PatDefault (I.TNone, fresh_if_wild avar_id)

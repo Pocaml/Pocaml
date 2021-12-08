@@ -20,14 +20,14 @@
 %token PLUS MINUS TIMES DIVIDE LT LE GT GE EQ NE OR AND CONS 
 %token IF THEN ELSE                                          
 %token LET IN                                               
-%token FUN REC                                                
+%token FUN REC FUNCTION
 %token MATCH WITH PIPE                                      
 %token ARROW
 %token LEFT_PAREN RIGHT_PAREN
 %token COLON
 %token SEQ LSEP
 
-%nonassoc LET IN FUN MATCH WITH ARROW
+%nonassoc LET IN FUN MATCH WITH ARROW FUNCTION
 %left PIPE
 %left SEQ
 %right LSEP
@@ -117,14 +117,19 @@ expr:
   | LET VARIABLE EQ expr IN expr { Letin($2, $4, $6) }
   | MATCH expr WITH match_arms { Match($2, $4) }
   | FUN params ARROW expr { Lambda($2, $4) }
+  | FUNCTION match_arms { Function($2) }
   | apply { $1 }
 
 var:
   VARIABLE         { Var($1) }
 
 match_arms:
-    PIPE pat ARROW expr { [($2, $4)] }
-  | PIPE pat ARROW expr match_arms { ($2, $4) :: $5 }
+  | match_arms_                     { $1 }
+  | PIPE match_arms_                { $2 }
+
+match_arms_:
+  | pat ARROW expr                  { [($1, $3)] }
+  | pat ARROW expr PIPE match_arms_ { ($1, $3) :: $5 }
 
 pat:
   | pat_                           { $1 }

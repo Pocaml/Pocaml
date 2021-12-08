@@ -23,6 +23,8 @@ OBJ= _init.o \
  _seq.o \
  _times.o \
  string_of_int.o \
+ string_of_bool.o \
+ string_of_char.o \
  print_string.o
 
 .PHONY: default

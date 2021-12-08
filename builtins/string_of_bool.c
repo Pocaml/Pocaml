@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "builtins.h"
 
-#define BOOL_NUM_CHAR    5
+#define BOOL_NUM_CHAR    6
 #define BOOL_STR_SIZE    (sizeof(_pml_char) * BOOL_NUM_CHAR)
 
 
@@ -18,7 +18,7 @@ _pml_val _builtin_string_of_bool(_pml_val *args)
 	if (*bool_val) {
 		bool_str = "true";
 	}
-	snprintf(res, "%s", bool_str);
+	sprintf(res, "%s", bool_str);
 
 #ifdef BUILTIN_DEBUG
 	printf("[debug] string_of_bool %d -> %s\n", *bool_val, res);

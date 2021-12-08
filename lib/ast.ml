@@ -50,6 +50,7 @@ and expr =
   | Conditional of expr * expr * expr
   | Letin of var_id * expr * expr
   | Lambda of param list * expr
+  | Function of (pat * expr) list
   | Apply of expr * expr
   | Match of expr * (pat * expr) list
   | Annotation of expr * typ

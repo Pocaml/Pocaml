@@ -24,7 +24,7 @@ let letter = (uppercase | lowercase)
 let escaped_char = ("\\n" | "\\t" | "\'")
 let char_literal = ([^ '\''] | escaped_char )
 let string_literal = ([^ '"'] | "\\\"")+
-let id_literal = (letter | digit | '_' | '\'')
+let id_literal = (letter | digit | '_')
 (* TODO: fix var_id regex: support 'a *)
 let capitalized_ident = uppercase id_literal*
 let lowercase_ident = ('_' | (lowercase) id_literal*)
@@ -52,6 +52,7 @@ rule token = parse
 | "let" { LET }
 | "in"  { IN }
 | "fun" { FUN }
+| "function" { FUNCTION }
 | "rec"   { REC }
 | "match" { MATCH }
 | "with"  { WITH }

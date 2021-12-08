@@ -35,6 +35,11 @@ _pml_bool _match_pat_lit_string(_pml_val val, _pml_string pat) {
     return strcmp(s, pat) == 0;
 }
 
+_pml_bool _match_pat_lit_unit(_pml_val val, _pml_unit pat) {
+    _pml_unit u = *((_pml_unit *) val);
+    return u == pat;
+}
+
 _pml_bool _match_pat_lit_list_end(_pml_val val) {
     return val == NULL;
 }
