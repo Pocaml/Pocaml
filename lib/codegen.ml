@@ -22,7 +22,7 @@ let codegen (Program definitions) =
   (* Get types from the context *)
   let void_t = L.void_type context in
   let pml_char_t = L.i8_type context in
-  let pml_bool_t = L.i8_type context in
+  let pml_bool_t = L.i1_type context in
   let pml_unit_t = L.i8_type context in
   let pml_int_t = L.i32_type context in
   let pml_string_t = L.pointer_type (L.i8_type context) in
@@ -46,6 +46,57 @@ let codegen (Program definitions) =
       L.function_type pml_val_t [| L.pointer_type pml_val_t; pml_int_t |]
     in
     L.declare_function "_get_arg" ftype the_module
+  in
+
+  let pml_error_nonexhaustive_pattern_matching =
+    let ftype = L.function_type void_t [||] in
+    L.declare_function "_pml_error_nonexhaustive_pattern_matching" ftype
+      the_module
+  in
+
+  let match_pat_cons_f =
+    let ftype = L.function_type pml_bool_t [| pml_val_t |] in
+    L.declare_function "_match_pat_cons" ftype the_module
+  in
+
+  let match_pat_cons_end_f =
+    let ftype = L.function_type pml_bool_t [| pml_val_t |] in
+    L.declare_function "_match_pat_cons_end" ftype the_module
+  in
+
+  let match_pat_lit_int_f =
+    let ftype = L.function_type pml_bool_t [| pml_val_t; pml_int_t |] in
+    L.declare_function "_match_pat_lit_int" ftype the_module
+  in
+
+  let match_pat_lit_char_f =
+    let ftype = L.function_type pml_bool_t [| pml_val_t; pml_char_t |] in
+    L.declare_function "_match_pat_lit_char" ftype the_module
+  in
+
+  let match_pat_lit_bool_f =
+    let ftype = L.function_type pml_bool_t [| pml_val_t; pml_bool_t |] in
+    L.declare_function "_match_pat_lit_bool" ftype the_module
+  in
+
+  let match_pat_lit_string_f =
+    let ftype = L.function_type pml_bool_t [| pml_val_t; pml_string_t |] in
+    L.declare_function "_match_pat_lit_string" ftype the_module
+  in
+
+  let match_pat_lit_list_end_f =
+    let ftype = L.function_type pml_bool_t [| pml_val_t |] in
+    L.declare_function "_match_pat_lit_list_end" ftype the_module
+  in
+
+  let list_get_head_f =
+    let ftype = L.function_type pml_val_t [| pml_val_t |] in
+    L.declare_function "_list_get_head" ftype the_module
+  in
+
+  let list_get_tail_f =
+    let ftype = L.function_type pml_val_t [| pml_val_t |] in
+    L.declare_function "_list_get_tail" ftype the_module
   in
 
   let make_int_f =
@@ -121,7 +172,7 @@ let codegen (Program definitions) =
   (* This `lookup` is actually more complicated than just looking up the llvalue.
      Since LLVM globals are actually pointers to the values, we have to first load
      the globals into a local variable, and then use it accordingly. However,
-     the current hacky approach actually loads it everytime it is beging looked up,
+     the current hacky approach actually loads it everytime it is being looked up,
      so there could be multiple locals variables that point to the same global variable.
      It works, but we should probably think of something better. *)
   let lookup n builder env =
@@ -161,8 +212,105 @@ let codegen (Program definitions) =
             builder
         in
         (llval, builder)
-    | Match (t, e, arms) -> not_implemented ()
-  (* TODO *)
+    | Match (t, e, arms) ->
+        (* evaluate e first *)
+        let e', builder = build_expr f builder env e in
+        (* allocate a result variable (build_alloca): pointer to pml_val_t *)
+        let match_val_ptr = L.build_alloca pml_val_t "match_val" builder in
+        (* make a end_match block that load result var into an llvalue and return it with new builder *)
+        let end_match_block = L.append_block context "end_match" f in
+        (* recursively make match blocks with append_block *)
+        let rec build_match_arms = function
+          | [] ->
+              (* no match: non-exhaustive pattern matching *)
+              let block = L.append_block context "no_match" f in
+              let builder = L.builder_at_end context block in
+              let _ =
+                L.build_call pml_error_nonexhaustive_pattern_matching [||] ""
+                  builder
+              in
+              let _ = L.build_br end_match_block builder in
+              block
+          | (pat, arm_e) :: arms ->
+              let next_match_block = build_match_arms arms in
+              let match_block = L.append_block context "match" f in
+              let match_builder = L.builder_at_end context match_block in
+              let arm_block = L.append_block context "arm" f in
+              let arm_builder = L.builder_at_end context arm_block in
+              (* build match *)
+              let match_result =
+                match pat with
+                | PatLit (_, lit) -> (
+                    match lit with
+                    | LitInt n ->
+                        let llval = L.const_int pml_int_t n in
+                        L.build_call match_pat_lit_int_f [| e'; llval |]
+                          "match_result" match_builder
+                    | LitChar c ->
+                        let llval = L.const_int pml_char_t (Char.code c) in
+                        L.build_call match_pat_lit_int_f [| e'; llval |]
+                          "match_result" match_builder
+                    | LitString s ->
+                        let llval = L.build_global_stringptr s "" builder in
+                        L.build_call match_pat_lit_string_f [| e'; llval |]
+                          "match_result" match_builder
+                    | LitBool b ->
+                        let llval = L.const_int pml_bool_t (Bool.to_int b) in
+                        L.build_call match_pat_lit_bool_f [| e'; llval |]
+                          "match_result" match_builder
+                    | LitUnit -> L.const_int pml_bool_t (Bool.to_int true)
+                    | LitListEnd ->
+                        L.build_call match_pat_lit_list_end_f [| e' |]
+                          "match_result" match_builder)
+                | PatDefault _ -> L.const_int pml_bool_t (Bool.to_int true)
+                | PatCons _ ->
+                    L.build_call match_pat_cons_f [| e' |] "match_result"
+                      match_builder
+                | PatConsEnd _ ->
+                    L.build_call match_pat_cons_end_f [| e' |] "match_result"
+                      match_builder
+              in
+              (* conditional jump to arm_block *)
+              let _ =
+                L.build_cond_br match_result arm_block next_match_block
+                  match_builder
+              in
+              (* build arm *)
+              let env =
+                match pat with
+                | PatLit _ -> env
+                | PatDefault (_, vid) -> add_var_to_scope vid e' env
+                | PatCons (_, vid1, vid2) ->
+                    let e1 =
+                      L.build_call list_get_head_f [| e' |] "" arm_builder
+                    in
+                    let e2 =
+                      L.build_call list_get_tail_f [| e' |] "" arm_builder
+                    in
+                    let env1 = add_var_to_scope vid1 e1 env in
+                    let env2 = add_var_to_scope vid2 e2 env1 in
+                    env2
+                | PatConsEnd (_, vid1) ->
+                    let e1 =
+                      L.build_call list_get_head_f [| e' |] "" arm_builder
+                    in
+                    let env1 = add_var_to_scope vid1 e1 env in
+                    env1
+              in
+              let arm_val, arm_builder = build_expr f arm_builder env arm_e in
+              let _ = L.build_store arm_val match_val_ptr arm_builder in
+              let _ = L.build_br end_match_block arm_builder in
+              match_block
+        in
+        (* jump to the first match block *)
+        let first_match_block = build_match_arms arms in
+        let _ = L.build_br first_match_block builder in
+        let end_match_builder = L.builder_at_end context end_match_block in
+        let match_val =
+          L.build_load match_val_ptr "match_val" end_match_builder
+        in
+        (match_val, end_match_builder)
+  (* build arm *)
   and build_expr_lit builder = function
     | LitInt n ->
         let llval =
@@ -291,7 +439,9 @@ let codegen (Program definitions) =
   (* Build calls in main for the top-evel init functions *)
   let () =
     let build_call_init f = ignore (L.build_call f [||] "" main_builder) in
-    List.iter (fun (Def (n, _)) -> build_call_init (StringMap.find n topinits)) definitions
+    List.iter
+      (fun (Def (n, _)) -> build_call_init (StringMap.find n topinits))
+      definitions
   in
 
   (* Terminate main with a return *)

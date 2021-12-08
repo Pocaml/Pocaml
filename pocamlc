@@ -18,12 +18,13 @@ CC=cc
 
 usage()
 {
-  printf "usage: pocamlc [-c] [-d] [-r] [-h] [-f <path_to_pml_file>]"
+  printf "usage: pocamlc [-cdrh] [-f] <path_to_pml_file>]"
   printf
   printf "options:"
   printf "-c	Clean C object files from previous build before rebuild."
   printf "-d	Compile Pocaml C builtins with debugging information."
   printf "-r	Run the executable after compilation."
+  printf "-x	Clean and remove all build artifacts."
   printf "-h	Display pocamlc usage."
 }
 
@@ -34,16 +35,22 @@ POCAMLC_FLAGS=""
 [[ $* ]] || { usage; exit 1; }
 
 # parse options and argument
-while getopts 'cdrf:h' opt; do
+while getopts 'cdrxf:h' opt; do
   case $opt in
     c) CLEAN_PREV_BUILD=true;;
-    d) POCAMLC_FLAGS+=" -D BUILTIN_DEBUG" ;;
+    d) POCAMLC_FLAGS+=" -D BUILTIN_DEBUG";;
     r) RUN_AFTER_COMPILATION=true;;
-    f) fpath=$OPTARG;
+    f) fpath=$OPTARG
        fname=${fpath##*/}
-       basename="${fname%.*}" ;;
+       basename="${fname%.*}";;
+    x) rm -rf $build_dir
+       dune clean
+       cd builtins
+       make clean
+       cd ..
+       exit;;
     h | *) usage
-       exit ;;
+       exit;;
   esac
 done
 
