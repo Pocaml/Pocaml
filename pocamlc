@@ -18,14 +18,16 @@ CC=cc
 
 usage()
 {
-  printf "usage: pocamlc [-cdrh] [-f] <path_to_pml_file>]"
-  printf
-  printf "options:"
-  printf "-c	Clean C object files from previous build before rebuild."
-  printf "-d	Compile Pocaml C builtins with debugging information."
-  printf "-r	Run the executable after compilation."
-  printf "-x	Clean and remove all build artifacts."
-  printf "-h	Display pocamlc usage."
+  echo
+  echo "usage: pocamlc [-cdrh] [-f] <path_to_pml_file>]"
+  echo
+  echo "options:"
+  echo "-c	Clean C object files from previous build before rebuild."
+  echo "-d	Compile Pocaml C builtins with debugging information."
+  echo "-r	Run the executable after compilation."
+  echo "-x	Clean and remove all build artifacts."
+  echo "-h	Display pocamlc usage."
+  echo
 }
 
 CLEAN_PREV_BUILD=false

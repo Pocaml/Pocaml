@@ -21,8 +21,9 @@ let digit = ['0'-'9']
 let uppercase = ['A'-'Z']
 let lowercase = ['a'-'z']
 let letter = (uppercase | lowercase)
-let char_literal = (letter | "\\n" | "\\t")
-let string_literal = (letter | digit | '_' | '\'' | ' ' | '\\')
+let escaped_char = ("\\n" | "\\t" | "\'")
+let char_literal = ([^ '\''] | escaped_char )
+let string_literal = ([^ '"'] | "\\\"")+
 let id_literal = (letter | digit | '_' | '\'')
 (* TODO: fix var_id regex: support 'a *)
 let capitalized_ident = uppercase id_literal*
@@ -68,7 +69,7 @@ rule token = parse
 | "true"  { LITBOOL(true)  }
 | "false" { LITBOOL(false) }
 | integer_literal+ as lit { LITINT(int_of_string lit) }
-| '"' (string_literal+ as lit) '"'  { LITSTRING(lit) }
+| '"' (string_literal as lit) '"'  { LITSTRING(lit) }
 | '\''(char_literal as lit)'\'' { LITCHAR(lit) }
 | lowercase_ident as var { VARIABLE(var) }
 | eof { EOF }
