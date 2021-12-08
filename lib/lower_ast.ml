@@ -121,8 +121,8 @@ and lower_pat =
     | A.LitBool b -> I.LitBool b
     | A.LitList [] -> I.LitListEnd
     | A.LitList _ -> error "Can't lower pattern matching on non-emtpy list"
-    | A.LitString _ -> error "Can't lower pattern matching on string"
-    | A.LitUnit -> error "Can't lower pattern matching on unit"
+    | A.LitString s -> I.LitString s
+    | A.LitUnit -> I.LitUnit
   in
   function
   | A.PatId avar_id -> I.PatDefault (I.TNone, fresh_if_wild avar_id)

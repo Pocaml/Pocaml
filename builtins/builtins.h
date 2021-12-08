@@ -59,6 +59,7 @@ _pml_bool _match_pat_lit_int(_pml_val val, _pml_int pat);
 _pml_bool _match_pat_lit_char(_pml_val val, _pml_char pat);
 _pml_bool _match_pat_lit_bool(_pml_val val, _pml_bool pat);
 _pml_bool _match_pat_lit_string(_pml_val val, _pml_string pat);
+_pml_bool _match_pat_lit_unit(_pml_val val, _pml_unit pat);
 _pml_bool _match_pat_lit_list_end(_pml_val val);
 _pml_val _list_get_head(_pml_val val);
 _pml_val _list_get_tail(_pml_val val);

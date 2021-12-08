@@ -84,6 +84,12 @@ let codegen (Program definitions) =
     L.declare_function "_match_pat_lit_string" ftype the_module
   in
 
+  let match_pat_lit_unit_f =
+    let ftype = L.function_type pml_bool_t [| pml_val_t; pml_unit_t |] in
+    L.declare_function "_match_pat_lit_unit" ftype the_module
+  in
+
+
   let match_pat_lit_list_end_f =
     let ftype = L.function_type pml_bool_t [| pml_val_t |] in
     L.declare_function "_match_pat_lit_list_end" ftype the_module
@@ -248,7 +254,7 @@ let codegen (Program definitions) =
                           "match_result" match_builder
                     | LitChar c ->
                         let llval = L.const_int pml_char_t (Char.code c) in
-                        L.build_call match_pat_lit_int_f [| e'; llval |]
+                        L.build_call match_pat_lit_char_f [| e'; llval |]
                           "match_result" match_builder
                     | LitString s ->
                         let llval = L.build_global_stringptr s "" builder in
@@ -258,7 +264,10 @@ let codegen (Program definitions) =
                         let llval = L.const_int pml_bool_t (Bool.to_int b) in
                         L.build_call match_pat_lit_bool_f [| e'; llval |]
                           "match_result" match_builder
-                    | LitUnit -> L.const_int pml_bool_t (Bool.to_int true)
+                    | LitUnit ->
+                        let llval = L.const_int pml_unit_t 69 in
+                        L.build_call match_pat_lit_unit_f [| e'; llval |]
+                          "match_result" match_builder
                     | LitListEnd ->
                         L.build_call match_pat_lit_list_end_f [| e' |]
                           "match_result" match_builder)
