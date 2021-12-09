@@ -21,7 +21,9 @@ let rec list_append xs ys =
 
 let rec list_filter pred = function
   | [] -> []
-  | x :: xs -> if pred x then x else list_filter pred xs
+  | x :: xs -> if pred x 
+               then x :: (list_filter pred xs) 
+               else list_filter pred xs
 
 let rec list_fold_left f m = function
   | [] -> m
