@@ -29,3 +29,20 @@ let rec list_fold_left f m = function
 
 let list_rev xs =
   list_fold_left (fun l x -> x :: l) [] xs
+  
+let rec fold_right_helper f xl m = match xl with
+    | [] -> m
+    | x :: xs -> fold_right_helper f xs (f x m)
+
+let list_fold_right f xlist m = 
+  let xr = list_rev xlist in fold_right_helper f xr m
+
+let list_hd = function
+  | x :: xs -> x
+
+let list_tl = function
+  | x :: xs -> xs
+
+let print_int_list l1 = list_iter print_int l1
+let print_bool_list l2 = list_iter print_bool l2
+let print_char_list l3 = list_iter print_char l3
