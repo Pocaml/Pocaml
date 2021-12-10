@@ -25,7 +25,8 @@ OBJ= _init.o \
  string_of_int.o \
  string_of_bool.o \
  string_of_char.o \
- print_string.o
+ print_string.o \
+ error.o
 
 .PHONY: default
 default: pml_builtins.a

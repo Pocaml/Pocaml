@@ -5,4 +5,4 @@ let test_cases = [
   "\"quoted\""
 ]
 
-let _ = map print_endline test_cases
+let _ = list_map print_endline test_cases

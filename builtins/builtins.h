@@ -139,6 +139,10 @@ _pml_func _builtin_print_string;
 extern _pml_val print_string;
 _pml_init _init_print_string;
 
+_pml_func _builtin_error;
+extern _pml_val error;
+_pml_init _init_error;
+
 _pml_init _init__builtins;
 
 #endif
