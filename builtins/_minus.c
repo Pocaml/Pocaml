@@ -5,14 +5,14 @@
 _pml_val _minus;
 
 _pml_val _builtin__minus(_pml_val *args) {
-    _pml_int *left_operand, *right_operand;
-	_pml_int *res = (_pml_int *) malloc(sizeof(_pml_int));
+	_pml_val left, right;
 
-	left_operand = (_pml_int *) args[0];
-	right_operand = (_pml_int *) args[1];
+	left = (_pml_val) args[0];
+	right = (_pml_val) args[1];
 
-	*res = *left_operand - *right_operand;
-	return (_pml_val) res;
+	_pml_int res = _pml_get_int(left) - _pml_get_int(right);
+
+	return _make_int(res);
 }
 
 void _init__minus() {

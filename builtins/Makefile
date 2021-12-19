@@ -4,6 +4,7 @@ DEPS=buildins.h
 OBJ= _init.o \
  _apply_closure.o \
  _get_arg.o \
+ get_types.o \
  _make_closure.o \
  _make_primitives.o \
  _pattern_match.o \

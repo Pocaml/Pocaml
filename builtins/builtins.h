@@ -5,12 +5,36 @@
 #include <stdbool.h>
 
 /* pocaml primitives */
+
+typedef enum {
+PML_CHAR,
+PML_BOOL,
+PML_UNIT,
+PML_INT,
+PML_STRING,
+PML_LIST,
+PML_CLOSURE
+} _pml_type;
+
 typedef		char      _pml_char;
 typedef		bool		_pml_bool;
 typedef		int8_t		_pml_unit;
 typedef		int32_t		_pml_int;
 typedef		_pml_char	*_pml_string;
-typedef		int8_t		*_pml_val;
+typedef struct _pml_val_internal
+{
+	_pml_type type;
+	union {
+		_pml_char c;
+		_pml_bool b;
+		_pml_unit u;
+		_pml_int i;
+		_pml_string s;
+		void *l;
+		void *closure;
+	};
+} _pml_val_internal;
+typedef		_pml_val_internal		*_pml_val;
 typedef		_pml_val	_pml_func(_pml_val*);
 typedef struct _pml_list {
 	_pml_val data;
@@ -18,6 +42,15 @@ typedef struct _pml_list {
 } _pml_list;
 
 typedef void _pml_init(void);
+
+/* type related helpers */
+_pml_char _pml_get_char(_pml_val);
+_pml_bool _pml_get_bool(_pml_val);
+_pml_unit _pml_get_unit(_pml_val);
+_pml_int _pml_get_int(_pml_val);
+_pml_string _pml_get_string(_pml_val);
+_pml_list *_pml_get_list(_pml_val);
+void *_pml_get_closure(_pml_val);
 
 /* closure */
 typedef struct _pml_closure_md
