@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+# stop script when a command returns with non-zero
+set -e
+
+usage()
+{
+  echo
+  echo "usage: pocaml <path_to_pml_file>]"
+}
+
+[[ $* ]] || { usage; exit 1; }
+./runDocker ./pocamlc -crf $1
