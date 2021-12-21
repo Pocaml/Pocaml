@@ -5,14 +5,14 @@ _pml_val _or;
 
 _pml_val _builtin__or(_pml_val *args)
 {
-	_pml_bool *left_operand, *right_operand;
-	_pml_bool *res = (_pml_bool *)malloc(sizeof(_pml_bool));
+	_pml_val left, right;
 
-	left_operand = (_pml_bool *)args[0];
-	right_operand = (_pml_bool *)args[1];
+	left = (_pml_val) args[0];
+	right = (_pml_val) args[1];
 
-	*res = *left_operand || *right_operand;
-	return (_pml_val)res;
+	_pml_bool res = _pml_get_bool(left) || _pml_get_bool(right);
+
+	return _make_int(res);
 }
 
 void _init__or()
