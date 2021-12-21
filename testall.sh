@@ -87,6 +87,7 @@ Check() {
 	echo "OK"
 	echo "###### SUCCESS" 1>&2
     else
+    echo "FAILED"
 	echo "###### FAILED" 1>&2
 	globalerror=$error
     fi
