@@ -18,5 +18,6 @@ let builtin_names =
     "string_of_int";
     "string_of_bool";
     "string_of_char";
-    "print_string"
+    "print_string";
+    "error"
   ]

@@ -4,3 +4,6 @@ _opam/
 .editorconfig
 .vscode
 _pml_build/
+*.out
+*.log
+*.diff

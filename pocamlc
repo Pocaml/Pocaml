@@ -17,7 +17,7 @@ LLC=llc
 CC=cc
 OCAMLC=ocamlc
 
-usage()
+Usage()
 {
   echo
   echo "usage: pocamlc [-cdrh] [-f] <path_to_pml_file>]"
@@ -37,26 +37,39 @@ RUN_AFTER_COMPILATION=false
 TYPECHECK=false
 POCAMLC_FLAGS=""
 
-[[ $* ]] || { usage; exit 1; }
+[ $# -eq 0 ] && Usage
 
 # parse options and argument
 while getopts 'cdrtxf:h' opt; do
   case $opt in
-    c) CLEAN_PREV_BUILD=true;;
-    d) POCAMLC_FLAGS+=" -D BUILTIN_DEBUG";;
-    r) RUN_AFTER_COMPILATION=true;;
-    t) TYPECHECK=true;;
-    f) fpath=$OPTARG
-       fname=${fpath##*/}
-       basename="${fname%.*}";;
-    x) rm -rf $build_dir
-       dune clean
-       cd builtins
-       make clean
-       cd ..
-       exit;;
-    h | *) usage
-       exit;;
+    c)	# clean C object files
+	CLEAN_PREV_BUILD=true
+	;;
+    d) # compile with debugging info
+	POCAMLC_FLAGS+=" -D BUILTIN_DEBUG"
+	;;
+    r) # run compiled executable
+	RUN_AFTER_COMPILATION=true
+	;;
+    t)	# type check before compilation
+	TYPECHECK=true
+	;;
+    f) # file
+	fpath=$OPTARG
+	fname=${fpath##*/}
+	basename="${fname%.*}"
+	;;
+    x) # clean build artifacts
+	rm -rf $build_dir
+	dune clean
+	cd builtins
+	make clean
+	cd ..
+	exit
+	;;
+    h | *) # help
+	Usage
+	;;
   esac
 done
 

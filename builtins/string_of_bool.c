@@ -10,21 +10,21 @@ _pml_val string_of_bool;
 
 _pml_val _builtin_string_of_bool(_pml_val *args)
 {
-	_pml_bool *bool_val;
+	_pml_bool bool_val;
 	_pml_string bool_str = "false";
-	_pml_string res = (_pml_string) malloc(BOOL_STR_SIZE);
+	_pml_char res[BOOL_STR_SIZE];
 
-	bool_val = (_pml_bool *) args[0];
-	if (*bool_val) {
+	bool_val = _pml_get_bool(args[0]);
+	if (bool_val) {
 		bool_str = "true";
 	}
 	sprintf(res, "%s", bool_str);
 
 #ifdef BUILTIN_DEBUG
-	printf("[debug] string_of_bool %d -> %s\n", *bool_val, res);
+	printf("[debug] string_of_bool %d -> %s\n", bool_val, res);
 #endif
 
-	return (_pml_val) res;
+	return _make_string(res);
 }
 
 void _init_string_of_bool()

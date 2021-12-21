@@ -20,4 +20,5 @@ void _init__builtins()
     _init_string_of_char();
     _init_string_of_bool();
     _init_print_string();
+    _init_error();
 }

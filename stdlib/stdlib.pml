@@ -21,7 +21,9 @@ let rec list_append xs ys =
 
 let rec list_filter pred = function
   | [] -> []
-  | x :: xs -> if pred x then x else list_filter pred xs
+  | x :: xs -> if pred x 
+               then x :: (list_filter pred xs) 
+               else list_filter pred xs
 
 let rec list_fold_left f m = function
   | [] -> m
@@ -39,9 +41,11 @@ let list_fold_right f xlist m =
 
 let list_hd = function
   | x :: xs -> x
+  | _ -> error "Trying to get head from empty list"
 
 let list_tl = function
   | x :: xs -> xs
+  | _ -> error "Unable to get tail from emtpy/one-element list"
 
 let print_int_list l1 = list_iter print_int l1
 let print_bool_list l2 = list_iter print_bool l2

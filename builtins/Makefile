@@ -4,6 +4,7 @@ DEPS=buildins.h
 OBJ= _init.o \
  _apply_closure.o \
  _get_arg.o \
+ get_types.o \
  _make_closure.o \
  _make_primitives.o \
  _pattern_match.o \
@@ -25,7 +26,8 @@ OBJ= _init.o \
  string_of_int.o \
  string_of_bool.o \
  string_of_char.o \
- print_string.o
+ print_string.o \
+ error.o
 
 .PHONY: default
 default: pml_builtins.a

@@ -9,7 +9,7 @@ _pml_val _builtin_print_string(_pml_val *args)
 {
 	_pml_string s;
 
-	s = (_pml_string) args[0];
+	s = _pml_get_string(args[0]);
 
 	printf("%s", s);
 	return _make_unit();
