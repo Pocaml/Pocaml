@@ -9,16 +9,11 @@ void *_dup_closure(void *closure)
 {
 	_pml_int num_args, dup_size;
 	void *dup_closure;
-	_pml_func *f;
 
 	num_args = _closure_required(closure);
 	dup_size = _closure_size(closure);
-	f = _closure_fp(closure);
 
     dup_closure = malloc(_closure_size_with_args(num_args));
-    _set_closure_fp(closure, f);
-    _set_closure_required(closure, num_args);
-    _set_closure_supplied(closure, 0);
 
 	memcpy(dup_closure, closure, dup_size);
 
