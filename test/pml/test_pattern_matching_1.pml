@@ -11,14 +11,10 @@ let test_pattern_matching lst =
 	  | _	  -> "other  list"
     | [] -> "empty list ([])"
 
-let lsts = [
-  [1; 2];
-  [true; false];
-  [false; true];
-  ['a'; 'b'];
-  [()];
-  ["pml"; "cool"];
-  [2;1]
-]
-
-let _ = list_map (fun lst -> print_endline (test_pattern_matching lst)) lsts
+let _ = print_endline (test_pattern_matching [1; 2])
+let _ = print_endline (test_pattern_matching [true; false])
+let _ = print_endline (test_pattern_matching [false; true])
+let _ = print_endline (test_pattern_matching ['a'; 'b'])
+let _ = print_endline (test_pattern_matching [()])
+let _ = print_endline (test_pattern_matching ["pml"; "cool"])
+let _ = print_endline (test_pattern_matching [2;1])
