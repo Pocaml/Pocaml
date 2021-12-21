@@ -8,7 +8,7 @@ error=0
 globalerror=0
 
 keep=0
-pflags=""
+pflags="-c"
 
 Usage() {
     echo "Usage: testall.sh [options] [.pml files]"
@@ -74,7 +74,7 @@ Check() {
     generatedfiles=""
 
     generatedfiles="$generatedfiles ${basename}.diff ${basename}.out" &&
-    Run $POCAML $pflags ${testdir}/${basename}.pml 1>&/dev/null &&
+    Run $POCAML $pflags ${testdir}/${basename}.pml 1>&2 &&
     Run "${build_dir}/${basename}.exe" > ${basename}.out &&
     Compare ${basename}.out ${reffile}.out ${basename}.diff
 

@@ -12,7 +12,7 @@ Usage()
   echo
   echo "usage:	pocaml [options] [<path_to_pml_file>...]"
   echo
-  echo "-c	Produce pocaml compiler"
+  echo "-c	Only compile .pml files"
   echo "-h	Display this help"
   echo
 
@@ -77,3 +77,5 @@ if [ $FROM_STDIN = true ]
 then
     $POCAML $PFLAGS
 fi
+
+exit 0
