@@ -27,7 +27,6 @@ SignalError() {
 # Compare <outfile> <reffile> <difffile>
 # Compares the outfile with reffile.  Differences, if any, written to difffile
 Compare() {
-    echo "\n$*"
     generatedfiles="$generatedfiles $3"
     echo diff -b $1 $2 ">" $3 1>&2
     diff -b "$1" "$2" > "$3" 2>&1 || {
@@ -73,7 +72,7 @@ Check() {
     generatedfiles=""
 
     generatedfiles="$generatedfiles ${basename}.diff ${basename}.out" &&
-    Run "$POCAMLC" "-cf" ${testdir}/${basename}.pml &&
+    Run "$POCAMLC" "-f" ${testdir}/${basename}.pml 1>&2 &&
     Run "${build_dir}/${basename}.exe" > ${basename}.out &&
     Compare ${basename}.out ${reffile}.out ${basename}.diff
 
@@ -114,7 +113,7 @@ fi
 for file in $files
 do
     case $file in
-	*.pml*)
+	*.pml)
 	    Check $file 2>> $globallog
 	    ;;
 	*)
