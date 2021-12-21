@@ -1,4 +1,4 @@
-POCAMLC="./pocamlc"
+POCAML="./pocaml"
 
 ulimit -t 30
 
@@ -8,10 +8,12 @@ error=0
 globalerror=0
 
 keep=0
+pflags=""
 
 Usage() {
     echo "Usage: testall.sh [options] [.pml files]"
     echo "-k    Keep intermediate files"
+    echo "-l	Run tests locally"
     echo "-h    Print this help"
     exit 1
 }
@@ -27,7 +29,6 @@ SignalError() {
 # Compare <outfile> <reffile> <difffile>
 # Compares the outfile with reffile.  Differences, if any, written to difffile
 Compare() {
-    echo "\n$*"
     generatedfiles="$generatedfiles $3"
     echo diff -b $1 $2 ">" $3 1>&2
     diff -b "$1" "$2" > "$3" 2>&1 || {
@@ -73,7 +74,7 @@ Check() {
     generatedfiles=""
 
     generatedfiles="$generatedfiles ${basename}.diff ${basename}.out" &&
-    Run "$POCAMLC" "-cf" ${testdir}/${basename}.pml &&
+    Run $POCAML $pflags ${testdir}/${basename}.pml 1>&/dev/null &&
     Run "${build_dir}/${basename}.exe" > ${basename}.out &&
     Compare ${basename}.out ${reffile}.out ${basename}.diff
 
@@ -91,10 +92,13 @@ Check() {
     fi
 }
 
-while getopts kh c; do
+while getopts khl c; do
     case $c in
 	k) # Keep intermediate files
 	    keep=1
+	    ;;
+	l) # Run tests locally
+	    pflags="-l $pflags"
 	    ;;
 	h) # Help
 	    Usage
@@ -114,7 +118,7 @@ fi
 for file in $files
 do
     case $file in
-	*.pml*)
+	*.pml)
 	    Check $file 2>> $globallog
 	    ;;
 	*)
