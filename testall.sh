@@ -1,4 +1,4 @@
-POCAML="./pocaml"
+POCAMLC="./pocamlc"
 
 ulimit -t 30
 
@@ -74,7 +74,7 @@ Check() {
     generatedfiles=""
 
     generatedfiles="$generatedfiles ${basename}.diff ${basename}.out" &&
-    Run $POCAML $pflags ${testdir}/${basename}.pml 1>&2 &&
+    Run $POCAMLC '-cf' ${testdir}/${basename}.pml 1>&2 &&
     Run "${build_dir}/${basename}.exe" > ${basename}.out &&
     Compare ${basename}.out ${reffile}.out ${basename}.diff
 
