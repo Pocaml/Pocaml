@@ -30,10 +30,8 @@ _pml_val _builtin__not_equal(_pml_val *args)
 			return _make_bool(res);
 		default:
 			_pml_error("This type does not support equality operator");
+			return NULL;
 	}
-
-	_pml_error("This type does not support equality operator");
-	return _make_int(420);
 }
 
 void _init__not_equal()

@@ -12,7 +12,7 @@ _pml_val _builtin__or(_pml_val *args)
 
 	_pml_bool res = _pml_get_bool(left) || _pml_get_bool(right);
 
-	return _make_int(res);
+	return _make_bool(res);
 }
 
 void _init__or()
