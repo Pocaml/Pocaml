@@ -1,7 +1,0 @@
-int    list   (1 :: ints)
-int    list   (1 :: ints)
-bool   list   (false :: bools)
-char   list   ('a' :: chars)
-unit   list
-string list   ("pml" :: strings)
-other  list
