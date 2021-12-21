@@ -23,12 +23,12 @@ SetFlags()
 {
     if [ "$COMPILE_ONLY" = "false" ]
     then
-	PFLAGS+=" -r"
+	PFLAGS="$PFLAGS -r"
     fi
 
     if [ "$FROM_STDIN" = "false" ]
     then
-	PFLAGS+=" -f"
+	PFLAGS="$PFLAGS -f"
     fi
 }
 
