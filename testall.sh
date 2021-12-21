@@ -1,4 +1,4 @@
-POCAMLC="./pocamlc"
+POCAML="./pocaml"
 
 ulimit -t 30
 
@@ -8,10 +8,12 @@ error=0
 globalerror=0
 
 keep=0
+pflags=""
 
 Usage() {
     echo "Usage: testall.sh [options] [.pml files]"
     echo "-k    Keep intermediate files"
+    echo "-l	Run tests locally"
     echo "-h    Print this help"
     exit 1
 }
@@ -65,15 +67,15 @@ Check() {
     testdir="`echo $1 | sed 's/\/[^\/]*$//'`"
     build_dir="_pml_build"
 
-    echo -n "$basename..."
+    echo "$basename...\c"
 
     echo 1>&2
     echo "###### Testing $basename" 1>&2
     generatedfiles=""
 
     generatedfiles="$generatedfiles ${basename}.diff ${basename}.out" &&
-    Run "$POCAMLC" "-cf" ${testdir}/${basename}.pml > ${testdir}/${basename}.out &&
-    Run "${build_dir}/${basename}.exe" > ${testdir}/${basename}.out &&
+    Run $POCAML $pflags ${testdir}/${basename}.pml 1>&/dev/null &&
+    Run "${build_dir}/${basename}.exe" > ${basename}.out &&
     Compare ${basename}.out ${reffile}.out ${basename}.diff
 
     # Report the status and clean up the generated files
@@ -90,10 +92,13 @@ Check() {
     fi
 }
 
-while getopts kdpsh c; do
+while getopts khl c; do
     case $c in
 	k) # Keep intermediate files
 	    keep=1
+	    ;;
+	l) # Run tests locally
+	    pflags="-l $pflags"
 	    ;;
 	h) # Help
 	    Usage
@@ -113,7 +118,7 @@ fi
 for file in $files
 do
     case $file in
-	*test_*)
+	*.pml)
 	    Check $file 2>> $globallog
 	    ;;
 	*)

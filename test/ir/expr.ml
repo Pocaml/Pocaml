@@ -6,7 +6,7 @@ let%expect_test "annotated literal" =
 
 let%expect_test "annotated variable" =
   print_prog "let _ = let a = 3 in (a : int)";
-  [%expect {| let _ = ( let ( a : None ) = ( 3 : None ) in ( a : int ) ) |}]
+  [%expect {| let U2 = ( let ( a : None ) = ( 3 : None ) in ( a : int ) ) |}]
 
 let%expect_test "annotated expr with unary operator" =
   print_prog "let a = (not true : bool)";
@@ -48,5 +48,5 @@ let%expect_test "annotated match expression" =
   [%expect {|
     let a = ( (
      match ( 3 : None ) with
-    |  ( U2 : None ) -> ( 1 : None )
+    |  ( U3 : None ) -> ( 1 : None )
     ) : int ) |}]
