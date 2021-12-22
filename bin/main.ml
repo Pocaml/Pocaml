@@ -31,12 +31,15 @@ let () =
       print_string
         (Print_ir.string_of_program (Lower_ast.lower_program program))
   | Lambda ->
-      program |> Lower_ast.lower_program |> Type_infer.type_infer
-      |> Lambda_lift.lambda_lift |> Print_ir.string_of_program |> print_string
+      program |> Lower_ast.lower_program 
+              |> Lambda_lift.lambda_lift 
+              |> Print_ir.string_of_program 
+              |> print_string
   | _ -> (
       let m =
-        program |> Lower_ast.lower_program |> Type_infer.type_infer
-        |> Lambda_lift.lambda_lift |> Codegen.codegen
+        program |> Lower_ast.lower_program 
+                |> Lambda_lift.lambda_lift 
+                |> Codegen.codegen
       in
       match !action with
       | Ast -> ()
