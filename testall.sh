@@ -93,6 +93,38 @@ Check() {
     fi
 }
 
+CheckFail() {
+    error=0
+    basename=`echo $1 | sed 's/.*\\///
+                             s/.pml//'`
+    reffile=`echo $1 | sed 's/.pml$//'`
+    basedir="`echo $1 | sed 's/\/[^\/]*$//'`/."
+    testdir="`echo $1 | sed 's/\/[^\/]*$//'`"
+    build_dir="_pml_build"
+
+    echo "$basename...\c"
+
+    echo 1>&2
+    echo "###### Testing $basename" 1>&2
+    generatedfiles=""
+
+    generatedfiles="$generatedfiles ${basename}.diff ${basename}.err" &&
+    RunFail $POCAMLC '-bsrf' ${testdir}/${basename}.pml "2>" ${basename}.err ">>" $globallog &&
+    Compare ${basename}.err ${reffile}.err ${basename}.diff
+    # Report the status and clean up the generated files
+
+    if [ $error -eq 0 ] ; then
+	if [ $keep -eq 0 ] ; then
+	    rm -f $generatedfiles
+	fi
+    echo "OK"
+	echo "###### SUCCESS" 1>&2
+    else
+	echo "###### FAILED" 1>&2
+	globalerror=$error
+    fi
+}
+
 CompileLib() {
     Run $POCAMLC -a 1>> $globallog 2>&1
 }
@@ -117,7 +149,7 @@ if [ $# -ge 1 ]
 then
     files=$@
 else
-    files="test/pml/test_*.pml"
+    files="test/pml/*.pml"
 fi
 
 CompileLib
@@ -125,8 +157,11 @@ CompileLib
 for file in $files
 do
     case $file in
-	*.pml)
+	*test_*)
 	    Check $file 2>> $globallog
+	    ;;
+    *fail_*)
+	    CheckFail $file 2>> $globallog
 	    ;;
 	*)
 	    echo "unknown file type $file"

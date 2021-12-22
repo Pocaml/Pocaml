@@ -1,0 +1,3 @@
+let f x = 3 + x
+let y = g 4
+let _ = print_int y
