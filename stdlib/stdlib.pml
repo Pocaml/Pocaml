@@ -21,6 +21,14 @@ let rec list_filter pred = function
                then x :: (list_filter pred xs)
                else list_filter pred xs
 
+let rec list_mem el = function 
+  | [] -> false
+  | x :: xs -> 
+      if x = el then
+          true
+      else
+          list_mem el xs
+
 let rec list_fold_left f m = function
   | [] -> m
   | x :: xs -> list_fold_left f (f m x) xs
