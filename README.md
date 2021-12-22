@@ -15,6 +15,15 @@ To format the project, run:
 dune build @fmt
 dune promote
 ```
+## Running the Test Suites
+
+To run test suites, run the automated script testall.sh in the docker by
+```
+./runDocker ./testall.sh
+```
+This will run the integration test suites contained in the tests/pml/ directory
+and compare the output of the tests with the expected result contained in the .out
+directory.  The running log will be saved in the root directory.
 
 ## pocamlc
 

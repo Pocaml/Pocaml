@@ -5,5 +5,12 @@ docker_work_dir=/home/pocaml
 
 docker_cmd_override=$*
 
-docker build -t $docker_tag .
+docker build -t $docker_tag . > /dev/null 2>&1
+
+if [ $? -ne 0 ]; then
+    echo "docker build failed"
+else
+    set -e
+fi
+
 docker run -it -v "$(pwd)":"$docker_work_dir" -w="$docker_work_dir" $docker_tag $docker_cmd_override
