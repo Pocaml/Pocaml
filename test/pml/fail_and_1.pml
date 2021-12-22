@@ -1,2 +1,2 @@
-let x = true && 0
+let x = true && 1
 let _ = print_bool x
