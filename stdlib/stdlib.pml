@@ -1,10 +1,6 @@
-let print_endline s =
-  print_string s;
-  print_string "\n"
-
-let print_int n = print_string (string_of_int n)
-let print_bool b = print_string (string_of_bool b)
-let print_char c = print_string (string_of_char c)
+(****************)
+(*	List 	*)
+(****************)
 
 let rec list_length = function [] -> 0 | _ :: xs -> 1 + list_length xs
 
@@ -21,8 +17,8 @@ let rec list_append xs ys =
 
 let rec list_filter pred = function
   | [] -> []
-  | x :: xs -> if pred x 
-               then x :: (list_filter pred xs) 
+  | x :: xs -> if pred x
+               then x :: (list_filter pred xs)
                else list_filter pred xs
 
 let rec list_fold_left f m = function
@@ -31,12 +27,12 @@ let rec list_fold_left f m = function
 
 let list_rev xs =
   list_fold_left (fun l x -> x :: l) [] xs
-  
+
 let rec fold_right_helper f xl m = match xl with
     | [] -> m
     | x :: xs -> fold_right_helper f xs (f x m)
 
-let list_fold_right f xlist m = 
+let list_fold_right f xlist m =
   let xr = list_rev xlist in fold_right_helper f xr m
 
 let list_hd = function
@@ -47,6 +43,23 @@ let list_tl = function
   | x :: xs -> xs
   | _ -> error "Unable to get tail from emtpy/one-element list"
 
-let print_int_list l1 = list_iter print_int l1
-let print_bool_list l2 = list_iter print_bool l2
-let print_char_list l3 = list_iter print_char l3
+
+(****************)
+(*	I/O 	*)
+(****************)
+
+let print_endline s =
+  print_string s;
+  print_string "\n"
+
+let print_int n = print_string (string_of_int n)
+let print_bool b = print_string (string_of_bool b)
+let print_char c = print_string (string_of_char c)
+let print_list print_el lst =
+	let _ = print_string "[ " in
+	let _ = list_iter (fun el -> let _ = print_el el in print_string " " ) lst in
+		print_endline "]"
+
+let print_int_list l1 = print_list print_int l1
+let print_bool_list l2 = print_list print_bool l2
+let print_char_list l3 = print_list print_char l3
