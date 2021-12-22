@@ -157,10 +157,10 @@ CompileLib
 for file in $files
 do
     case $file in
-	*test_*)
+	*test_*.pml)
 	    Check $file 2>> $globallog
 	    ;;
-    *fail_*)
+    	*fail_*.pml)
 	    CheckFail $file 2>> $globallog
 	    ;;
 	*)
