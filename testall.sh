@@ -109,8 +109,7 @@ CheckFail() {
     generatedfiles=""
 
     generatedfiles="$generatedfiles ${basename}.diff ${basename}.err" &&
-    Run $POCAMLC '-bsf' ${testdir}/${basename}.pml 1>&2 &&
-    RunFail "${build_dir}/${basename}.exe" "2>" ${basename}.err ">>" $globallog &&
+    RunFail $POCAMLC '-bsrf' ${testdir}/${basename}.pml "2>" ${basename}.err ">>" $globallog &&
     Compare ${basename}.err ${reffile}.err ${basename}.diff
     # Report the status and clean up the generated files
 
