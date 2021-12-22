@@ -17,31 +17,58 @@ LLC=llc
 CC=cc
 OCAMLC=ocamlc
 
-Usage()
-{
+KEEP_BUILD_DIR=false
+COMPILE_C_LIB_ONLY=false
+CLEAN_PREV_BUILD=false
+RUN_AFTER_COMPILATION=false
+SKIP_BUILD_C_LIB=false
+TYPECHECK=false
+POCAMLC_FLAGS=""
+
+Usage() {
   echo
-  echo "usage: pocamlc [-cdrh] [-f] <path_to_pml_file>]"
+  echo "usage: pocamlc [otpions] [-f <path_to_pml_file>]"
   echo
   echo "options:"
+  echo "-a	Only compile Pocaml's C static library."
+  echo "-b	Use existing ./_pml_build and its files for build"
   echo "-c	Clean C object files from previous build before rebuild."
   echo "-d	Compile Pocaml C builtins with debugging information."
   echo "-r	Run the executable after compilation."
+  echo "-s	Skip building Pocaml's C static library."
   echo "-t	Typecheck with ocamlc."
   echo "-x	Clean and remove all build artifacts."
   echo "-h	Display pocamlc usage."
   echo
+
+  exit 0;
 }
 
-CLEAN_PREV_BUILD=false
-RUN_AFTER_COMPILATION=false
-TYPECHECK=false
-POCAMLC_FLAGS=""
+BuildCLib() {
+    [ "$SKIP_BUILD_C_LIB" = true ] && return
+
+    cd builtins
+    ([ "$CLEAN_PREV_BUILD" = true ] || [ "$COMPILE_C_LIB_ONLY" = true ]) && make clean
+    make PML_CFLAGS="${POCAMLC_FLAGS}"
+    cp ${builtins_ar} ../${build_dir}
+    cd ..
+
+    [ "$COMPILE_C_LIB_ONLY" = true ] && exit 0
+    echo
+}
 
 [ $# -eq 0 ] && Usage
 
 # parse options and argument
-while getopts 'cdrtxf:h' opt; do
+while getopts 'abcdrstxf:h' opt; do
   case $opt in
+    a)	# only compile pocaml C library into $build_dir
+	COMPILE_C_LIB_ONLY=true
+	BuildCLib
+	;;
+    b)	# keep &build_dir if already exists
+	KEEP_BUILD_DIR=true
+	;;
     c)	# clean C object files
 	CLEAN_PREV_BUILD=true
 	;;
@@ -50,6 +77,9 @@ while getopts 'cdrtxf:h' opt; do
 	;;
     r) # run compiled executable
 	RUN_AFTER_COMPILATION=true
+	;;
+    s)	# skip building pocaml C library
+	SKIP_BUILD_C_LIB=true
 	;;
     t)	# type check before compilation
 	TYPECHECK=true
@@ -74,8 +104,11 @@ while getopts 'cdrtxf:h' opt; do
 done
 
 # create build_dir
-rm -rf $build_dir
-mkdir $build_dir
+[ "$KEEP_BUILD_DIR" = false ] &&
+(
+    rm -rf $build_dir
+    mkdir $build_dir
+)
 
 # if '-f' specified, copy source file to build_dir
 # else, get input from stdin
@@ -90,7 +123,7 @@ fi
 
 # prepend stdlib
 fname_with_stdlib=${build_dir}/${fname}
-touch $fname_with_stdlib
+echo > $fname_with_stdlib
 for stdlib_file in ${stdlib_dir}/**; do
   { printf "(* pocamlc: %s *)\n" $stdlib_file;
     cat $stdlib_file;
@@ -120,11 +153,7 @@ fi
 $POCAML -c ${build_dir}/${fname}> ${build_dir}/${basename}.ll
 
 # build builtins C static library
-cd builtins
-[ "$CLEAN_PREV_BUILD" = true ] && make clean
-make PML_CFLAGS="${POCAMLC_FLAGS}"
-cp ${builtins_ar} ../${build_dir}
-cd ..
+BuildCLib
 
 # link the generated llvm with builtin
 cd ${build_dir}
