@@ -74,7 +74,7 @@ Check() {
     generatedfiles=""
 
     generatedfiles="$generatedfiles ${basename}.diff ${basename}.out" &&
-    Run $POCAMLC '-cf' ${testdir}/${basename}.pml 1>&2 &&
+    Run $POCAMLC '-bsf' ${testdir}/${basename}.pml 1>&2 &&
     Run "${build_dir}/${basename}.exe" > ${basename}.out &&
     Compare ${basename}.out ${reffile}.out ${basename}.diff
 
@@ -91,6 +91,10 @@ Check() {
 	echo "###### FAILED" 1>&2
 	globalerror=$error
     fi
+}
+
+CompileLib() {
+    Run $POCAMLC -a 1>> $globallog 2>&1
 }
 
 while getopts khl c; do
@@ -115,6 +119,8 @@ then
 else
     files="test/pml/test_*.pml"
 fi
+
+CompileLib
 
 for file in $files
 do
