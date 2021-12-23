@@ -29,23 +29,24 @@ SetFlags()
     if [ $COMPILE_ONLY -eq 1 ]
     then
 	PFLAGS="-c"
-	return
-    fi
-
-    PFLAGS="$PFLAGS -r"
-
-    if [ -f $c_lib ] && [ $CLEAN -eq 0 ]
-    then
-	# use existing C static lib
-	PFLAGS="$PFLAGS -bs"
     else
-	PFLAGS="$PFLAGS -c"
+	PFLAGS="$PFLAGS -r"
+
+	if [ -f $c_lib ] && [ $CLEAN -eq 0 ]
+	then
+	    # use existing C static lib
+	    PFLAGS="$PFLAGS -bs"
+	else
+	    PFLAGS="$PFLAGS -c"
+	fi
     fi
 
     if [ $FROM_STDIN -eq 0 ]
     then
 	PFLAGS="$PFLAGS -f"
     fi
+
+    echo "reached here flags: $PFLAGS"
 }
 
 [ $# -eq 0 ] && Usage
