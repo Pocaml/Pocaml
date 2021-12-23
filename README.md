@@ -1,5 +1,9 @@
 # Pocaml Programming Language
 
+Pocaml is the ”poor man’s OCaml”.  It incorporates the main features of OCaml, such as polymor-phic let-in bindings, lambda functions, pattern matching, and much of the same syntactic sugar,while also including a standard library for common use cases.  One interesting aspect of Pocaml isthat everything valid in this language can also be compiled by an OCaml compiler, in the sameway C code can be compiled by a C++ compiler.
+
+The input language is a functional language that follows the OCaml syntax.  After scanning andparsing, the Abstract Syntax Tree gets lowered to a more concise form of Intermediate Representa-tion.  Before generating LLVM code for the IR, our language goes through a pass of lambda lifting.Finally,  in  code  generation,  we  link  C  libraries  to  generate  builtin  functions,  and  use  OCaml’sLLVM bindings to compile our IR to binary executable.
+
 ## Quickstart
 
 Create a file called `pocaml.pml` using your text editor of choice and put in the following:
