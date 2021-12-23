@@ -3,11 +3,13 @@
 # stop script when a command returns with non-zero
 set -e
 
-POCAML=""
+POCAML="./pocamlc"
 PFLAGS=""
-COMPILE_ONLY=false
-FROM_STDIN=false
-LOCAL=false
+COMPILE_ONLY=0
+FROM_STDIN=0
+CLEAN=0
+
+c_lib="_pml_build/pml_builtins.a"
 
 Usage()
 {
@@ -16,6 +18,7 @@ Usage()
   echo
   echo "-c	Only compile .pml files"
   echo "-h	Display this help"
+  echo "-x	Clean and remove all build artifacts before compilation"
   echo
 
   exit 1
@@ -23,36 +26,38 @@ Usage()
 
 SetFlags()
 {
-    if [ "$COMPILE_ONLY" = "false" ]
+    if [ $COMPILE_ONLY -eq 1 ]
     then
+	PFLAGS="-c"
+    else
 	PFLAGS="$PFLAGS -r"
+
+	if [ -f $c_lib ] && [ $CLEAN -eq 0 ]
+	then
+	    # use existing C static lib
+	    PFLAGS="$PFLAGS -bs"
+	else
+	    PFLAGS="$PFLAGS -c"
+	fi
     fi
 
-    if [ "$FROM_STDIN" = "false" ]
+    if [ $FROM_STDIN -eq 0 ]
     then
 	PFLAGS="$PFLAGS -f"
     fi
-}
 
-SetCommand()
-{
-    if [ "$LOCAL" = true ]
-    then
-	POCAML="./pocamlc"
-    else
-	POCAML="./runDocker ./pocamlc"
-    fi
+    echo "reached here flags: $PFLAGS"
 }
 
 [ $# -eq 0 ] && Usage
 
-while getopts chl opt; do
+while getopts chx opt; do
     case $opt in
 	c)
-	    COMPILE_ONLY=true
+	    COMPILE_ONLY=1
 	    ;;
-	l)
-	    LOCAL=true
+	x)
+	    CLEAN=1
 	    ;;
 	*)
 	    Usage
@@ -64,18 +69,17 @@ shift $(($OPTIND - 1))
 
 if [ $# -eq 0 ]
 then
-    FROM_STDIN=true
+    FROM_STDIN=1
 fi
 
 SetFlags
-SetCommand
 
 for file in $@
 do
     $POCAML $PFLAGS $file
 done
 
-if [ $FROM_STDIN = true ]
+if [ $FROM_STDIN -ne 0 ]
 then
     $POCAML $PFLAGS
 fi

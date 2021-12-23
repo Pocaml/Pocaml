@@ -50,6 +50,7 @@ BuildCLib() {
     cd builtins
     ([ "$CLEAN_PREV_BUILD" = true ] || [ "$COMPILE_C_LIB_ONLY" = true ]) && make clean
     make PML_CFLAGS="${POCAMLC_FLAGS}"
+    [ -d "../${build_dir}" ] || mkdir ../${build_dir}
     cp ${builtins_ar} ../${build_dir}
     cd ..
 
